@@ -1,7 +1,8 @@
-import type { RaffleStats } from '../models/RaffleStats';
+import type { RaffleStats, UpdateRaffleStatsDTO } from '../models/RaffleStats';
 
 export interface IRaffleRepository {
   getStats(): Promise<RaffleStats>;
-  updateTicketsSold(newCount: number): Promise<RaffleStats>;
-  updateTotalTickets(newTotal: number): Promise<RaffleStats>;
+  updateStats(dto: UpdateRaffleStatsDTO): Promise<RaffleStats>;
+  adjustTicketsSold(delta: number): Promise<RaffleStats>;
+  recalculateSoldFromMerchants(merchantsTicketsSum: number): Promise<RaffleStats>;
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { raffleRepository } from '../../core/di/container';
-import type { RaffleStats } from '../../domain/models/RaffleStats';
+import type { RaffleStats, UpdateRaffleStatsDTO } from '../../domain/models/RaffleStats';
 
 export function useTicketStats() {
   const [stats, setStats] = useState<RaffleStats | null>(null);
@@ -21,26 +21,29 @@ export function useTicketStats() {
 
   const adjustSold = async (delta: number) => {
     if (!stats) return;
-    const next = stats.ticketsSold + delta;
-    const updated = await raffleRepository.updateTicketsSold(next);
+    const updated = await raffleRepository.adjustTicketsSold(delta);
     setStats(updated);
   };
 
-  const setTotal = async (total: number) => {
-    const updated = await raffleRepository.updateTotalTickets(total);
+  const updateCampaign = async (dto: UpdateRaffleStatsDTO) => {
+    const updated = await raffleRepository.updateStats(dto);
     setStats(updated);
+    return updated;
   };
 
   const percentage = stats && stats.totalTickets > 0
-    ? Math.round((stats.ticketsSold / stats.totalTickets) * 100)
+    ? Math.min(100, Math.round((stats.ticketsSold / stats.totalTickets) * 100))
     : 0;
+
+  const remainingTickets = stats ? Math.max(0, stats.totalTickets - stats.ticketsSold) : 0;
 
   return {
     stats,
     percentage,
+    remainingTickets,
     loading,
     adjustSold,
-    setTotal,
+    updateCampaign,
     refresh: fetchStats,
   };
 }

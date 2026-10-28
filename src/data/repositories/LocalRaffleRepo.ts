@@ -1,5 +1,5 @@
 import { db, ensureSeedData } from '../../core/config/dbClient';
-import type { RaffleStats } from '../../domain/models/RaffleStats';
+import type { RaffleStats, UpdateRaffleStatsDTO } from '../../domain/models/RaffleStats';
 import type { IRaffleRepository } from '../../domain/repositories/IRaffleRepository';
 
 const CAMPAIGN_ID = 'main-campaign';
@@ -12,22 +12,39 @@ export class LocalRaffleRepo implements IRaffleRepository {
     return stats;
   }
 
-  async updateTicketsSold(newCount: number): Promise<RaffleStats> {
+  async updateStats(dto: UpdateRaffleStatsDTO): Promise<RaffleStats> {
     const current = await this.getStats();
-    const clampedCount = Math.max(0, Math.min(current.totalTickets, newCount));
-    const updated: RaffleStats = { ...current, ticketsSold: clampedCount };
+    const totalTickets = dto.totalTickets !== undefined ? Math.max(1, dto.totalTickets) : current.totalTickets;
+    const ticketPrice = dto.ticketPrice !== undefined ? Math.max(0, dto.ticketPrice) : current.ticketPrice;
+    const ticketsSold = dto.ticketsSold !== undefined ? Math.max(0, dto.ticketsSold) : current.ticketsSold;
+    const campaignName = dto.campaignName?.trim() || current.campaignName;
+    const targetRevenue = totalTickets * ticketPrice;
+
+    const updated: RaffleStats = {
+      id: CAMPAIGN_ID,
+      campaignName,
+      totalTickets,
+      ticketsSold: Math.min(ticketsSold, totalTickets),
+      ticketPrice,
+      targetRevenue,
+    };
+
     await db.raffleStats.put(updated);
     return updated;
   }
 
-  async updateTotalTickets(newTotal: number): Promise<RaffleStats> {
+  async adjustTicketsSold(delta: number): Promise<RaffleStats> {
     const current = await this.getStats();
-    const validTotal = Math.max(1, newTotal);
-    const updated: RaffleStats = {
-      ...current,
-      totalTickets: validTotal,
-      ticketsSold: Math.min(current.ticketsSold, validTotal),
-    };
+    const nextSold = Math.max(0, Math.min(current.totalTickets, current.ticketsSold + delta));
+    const updated: RaffleStats = { ...current, ticketsSold: nextSold };
+    await db.raffleStats.put(updated);
+    return updated;
+  }
+
+  async recalculateSoldFromMerchants(merchantsTicketsSum: number): Promise<RaffleStats> {
+    const current = await this.getStats();
+    const clampedSold = Math.max(merchantsTicketsSum, current.ticketsSold);
+    const updated: RaffleStats = { ...current, ticketsSold: clampedSold };
     await db.raffleStats.put(updated);
     return updated;
   }

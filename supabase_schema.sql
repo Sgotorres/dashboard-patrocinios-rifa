@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS raffle_settings (
   campaign_name TEXT NOT NULL DEFAULT 'Campaña Principal',
   total_tickets INTEGER NOT NULL DEFAULT 500,
   tickets_sold INTEGER NOT NULL DEFAULT 0,
+  ticket_price NUMERIC(10, 2) NOT NULL DEFAULT 10.00,
+  target_revenue NUMERIC(10, 2) NOT NULL DEFAULT 5000.00,
   default_sponsor_fee NUMERIC(10, 2) NOT NULL DEFAULT 50.00,
   updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -25,10 +27,14 @@ CREATE TABLE IF NOT EXISTS merchants (
   name TEXT NOT NULL,
   address TEXT NOT NULL,
   phone TEXT NOT NULL,
+  social_url TEXT,
   logo_url TEXT,
+  tickets_count INTEGER NOT NULL DEFAULT 1,
+  ticket_price NUMERIC(10, 2) NOT NULL DEFAULT 10.00,
   payment_status payment_status_enum NOT NULL DEFAULT 'unpaid',
   total_fee NUMERIC(10, 2) NOT NULL DEFAULT 50.00,
   amount_paid NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+  payment_history JSONB NOT NULL DEFAULT '[]'::jsonb,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
