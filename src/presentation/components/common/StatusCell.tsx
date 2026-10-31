@@ -1,11 +1,13 @@
 import React from 'react';
-import type { PaymentStatus } from '../../../domain/models/Merchant';
+import type { CurrencyCode, PaymentStatus } from '../../../domain/models/Merchant';
 import { CheckCircle2, Clock, AlertTriangle, Eye } from 'lucide-react';
+import { formatMoney } from '../../../core/utils/currencyFormatter';
 
 interface Props {
   status: PaymentStatus;
   amountPaid: number;
   totalFee: number;
+  currency?: CurrencyCode;
   onClick?: () => void;
   interactive?: boolean;
   size?: 'sm' | 'md' | 'lg';
@@ -16,6 +18,7 @@ export const StatusCell: React.FC<Props> = ({
   status,
   amountPaid,
   totalFee,
+  currency = 'COP',
   onClick,
   interactive = true,
   size = 'md',
@@ -26,27 +29,24 @@ export const StatusCell: React.FC<Props> = ({
   const configs = {
     paid: {
       label: 'PAGADO',
-      subtitle: `$${amountPaid.toFixed(0)} / $${totalFee.toFixed(0)}`,
+      subtitle: `${formatMoney(amountPaid, currency)} / ${formatMoney(totalFee, currency)}`,
       icon: CheckCircle2,
-      // Filled vibrant Green
       bgClasses:
         'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-700/20 border-emerald-500',
       badgeClass: 'bg-emerald-700/40 text-emerald-100',
     },
     pending: {
       label: 'ABONO',
-      subtitle: `Resta $${remaining.toFixed(0)}`,
+      subtitle: `Resta ${formatMoney(remaining, currency)}`,
       icon: Clock,
-      // Filled vibrant Yellow / Amber
       bgClasses:
         'bg-amber-400 hover:bg-amber-300 text-amber-950 shadow-md shadow-amber-500/20 border-amber-300 font-extrabold',
       badgeClass: 'bg-amber-500/30 text-amber-950',
     },
     unpaid: {
       label: 'DEUDOR',
-      subtitle: `Debe $${totalFee.toFixed(0)}`,
+      subtitle: `Debe ${formatMoney(totalFee, currency)}`,
       icon: AlertTriangle,
-      // Filled vibrant Red
       bgClasses:
         'bg-rose-600 hover:bg-rose-500 text-white shadow-md shadow-rose-700/20 border-rose-500 font-extrabold',
       badgeClass: 'bg-rose-700/40 text-rose-100',

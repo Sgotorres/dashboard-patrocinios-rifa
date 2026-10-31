@@ -6,7 +6,7 @@ import { MerchantsDataTable } from '../components/tables/MerchantsDataTable';
 import { ExcelExportModal } from '../components/common/ExcelExportModal';
 import type { RaffleStats } from '../../domain/models/RaffleStats';
 import type { Merchant } from '../../domain/models/Merchant';
-import type { FilterStatus, SortOption } from '../hooks/useMerchants';
+import type { CurrencyFilter, CurrencyFinances, FilterStatus, SortOption } from '../hooks/useMerchants';
 import { Sparkles, ArrowRight, FileSpreadsheet } from 'lucide-react';
 
 interface Props {
@@ -15,17 +15,27 @@ interface Props {
   remainingTickets: number;
   onOpenConfig: () => void;
   onOpenAddTicket: () => void;
-  finances: { totalInvoiced: number; totalRaised: number; pendingReceivable: number; totalTicketsBought: number };
+  finances: {
+    cop: CurrencyFinances;
+    usd: CurrencyFinances;
+  };
+  todayCashbox: {
+    totalTodayCOP: number;
+    totalTodayUSD: number;
+    countToday: number;
+  };
   merchants: Merchant[];
   allMerchants: Merchant[];
   loading: boolean;
   filter: FilterStatus;
   setFilter: (f: FilterStatus) => void;
+  currencyFilter: CurrencyFilter;
+  setCurrencyFilter: (c: CurrencyFilter) => void;
   search: string;
   setSearch: (s: string) => void;
   sortBy: SortOption;
   setSortBy: (s: SortOption) => void;
-  counts: { all: number; paid: number; pending: number; unpaid: number };
+  counts: { all: number; paid: number; pending: number; unpaid: number; cop: number; usd: number };
   onSelectMerchant: (m: Merchant) => void;
   onOpenAbono: (m: Merchant) => void;
   onMarkAsPaid: (id: string) => void;
@@ -39,11 +49,14 @@ export const DashboardOverviewPage: React.FC<Props> = ({
   onOpenConfig,
   onOpenAddTicket,
   finances,
+  todayCashbox,
   merchants,
   allMerchants,
   loading,
   filter,
   setFilter,
+  currencyFilter,
+  setCurrencyFilter,
   search,
   setSearch,
   sortBy,
@@ -67,12 +80,15 @@ export const DashboardOverviewPage: React.FC<Props> = ({
         onOpenAddTicket={onOpenAddTicket}
       />
 
-      {/* Finance KPI Cards */}
+      {/* Finance KPI Cards con Selector Bimoneda COP / USD */}
       <FinanceSummaryCards
-        totalRaised={finances.totalRaised}
-        pendingReceivable={finances.pendingReceivable}
-        totalInvoiced={finances.totalInvoiced}
-        merchantsCount={allMerchants.length}
+        finances={finances}
+        todayCashbox={todayCashbox}
+        counts={{
+          cop: counts.cop,
+          usd: counts.usd,
+          all: allMerchants.length,
+        }}
       />
 
       {/* Quick Access Badges for Deudores & Abonos */}
@@ -89,7 +105,7 @@ export const DashboardOverviewPage: React.FC<Props> = ({
               </span>
             </div>
             <p className="text-slate-600 dark:text-slate-300 font-semibold mt-1">
-              Comercios que no han cancelado el patrocinio (Rojo)
+              Patrocinadores que no han pagado la publicidad (Rojo)
             </p>
           </div>
           <ArrowRight className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 ml-2" />
@@ -107,7 +123,7 @@ export const DashboardOverviewPage: React.FC<Props> = ({
               </span>
             </div>
             <p className="text-slate-600 dark:text-slate-300 font-semibold mt-1">
-              Comercios con pagos parciales y saldos a favor (Amarillo)
+              Patrocinadores con abonos parciales y saldo pendiente (Amarillo)
             </p>
           </div>
           <ArrowRight className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 ml-2" />
@@ -120,7 +136,7 @@ export const DashboardOverviewPage: React.FC<Props> = ({
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-indigo-500" />
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              Control de Cobros & Patrocinadores
+              Control de Cobros & Patrocinadores de Cine
             </h3>
           </div>
           <div className="flex items-center gap-2">
@@ -129,7 +145,7 @@ export const DashboardOverviewPage: React.FC<Props> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-colors cursor-pointer"
             >
               <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span>Exportar Excel Ordenado</span>
+              <span>Exportar Excel</span>
             </button>
           </div>
         </div>
@@ -137,6 +153,8 @@ export const DashboardOverviewPage: React.FC<Props> = ({
         <TableFilterBar
           activeFilter={filter}
           onSelectFilter={setFilter}
+          currencyFilter={currencyFilter}
+          onSelectCurrencyFilter={setCurrencyFilter}
           search={search}
           onSearchChange={setSearch}
           sortBy={sortBy}
@@ -162,7 +180,7 @@ export const DashboardOverviewPage: React.FC<Props> = ({
         merchants={allMerchants}
         stats={stats}
         title="Exportar Control General a Excel"
-        defaultFileName="reporte-general-cobranza"
+        defaultFileName="reporte-general-patrocinios-cine"
       />
     </div>
   );

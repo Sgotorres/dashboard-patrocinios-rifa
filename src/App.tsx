@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ThemeProvider } from './core/context/ThemeContext';
 import { AppLayout } from './presentation/components/layout/AppLayout';
 import type { ActiveTab } from './presentation/components/layout/Sidebar';
@@ -13,10 +13,20 @@ import { MerchantDetailModal } from './presentation/components/merchants/Merchan
 import { QuickAbonoModal } from './presentation/components/merchants/QuickAbonoModal';
 import { MerchantFormModal } from './presentation/components/merchants/MerchantFormModal';
 import { CampaignConfigModal } from './presentation/components/dashboard/CampaignConfigModal';
+import { BackupModal } from './presentation/components/common/BackupModal';
+import { QuickSearchModal } from './presentation/components/common/QuickSearchModal';
 import type { Merchant } from './domain/models/Merchant';
 
 function DashboardApp() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+
+  const {
+    stats,
+    percentage,
+    remainingTickets,
+    updateCampaign,
+    refresh: refreshStats,
+  } = useTicketStats();
 
   const {
     merchants,
@@ -24,35 +34,46 @@ function DashboardApp() {
     loading: loadingMerchants,
     filter,
     setFilter,
+    currencyFilter,
+    setCurrencyFilter,
     search,
     setSearch,
     sortBy,
     setSortBy,
     counts,
     finances,
+    todayCashbox,
     createMerchant,
     updateMerchant,
     markAsPaid,
     addPayment,
     addTickets,
     deleteMerchant,
-  } = useMerchants();
-
-  const {
-    stats,
-    percentage,
-    remainingTickets,
-    updateCampaign,
-  } = useTicketStats();
+    refresh: refreshMerchants,
+  } = useMerchants({ onTicketsChanged: refreshStats });
 
   // Modals state
   const [isAddTicketOpen, setIsAddTicketOpen] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [isBackupOpen, setIsBackupOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [detailMerchant, setDetailMerchant] = useState<Merchant | null>(null);
   const [editMerchant, setEditMerchant] = useState<Merchant | null>(null);
   const [abonoMerchant, setAbonoMerchant] = useState<Merchant | null>(null);
 
-  // Keep selected merchant detail in sync with latest allMerchants state
+  // Atajo global Ctrl+K / Cmd+K para abrir el buscador rápido
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Sincronizar el comercio seleccionado en detalle con el estado más reciente
   const currentDetailMerchant = detailMerchant
     ? allMerchants.find((m) => m.id === detailMerchant.id) || detailMerchant
     : null;
@@ -62,8 +83,9 @@ function DashboardApp() {
       activeTab={activeTab}
       onSelectTab={setActiveTab}
       counts={counts}
-      campaignName={stats?.campaignName || 'Gran Rifa y Patrocinios'}
+      campaignName={stats?.campaignName || 'Publicidad de Cine & Sorteo a la Playa'}
       onOpenAddTicket={() => setIsAddTicketOpen(true)}
+      onOpenBackup={() => setIsBackupOpen(true)}
     >
       {activeTab === 'dashboard' && (
         <DashboardOverviewPage
@@ -73,11 +95,14 @@ function DashboardApp() {
           onOpenConfig={() => setIsConfigOpen(true)}
           onOpenAddTicket={() => setIsAddTicketOpen(true)}
           finances={finances}
+          todayCashbox={todayCashbox}
           merchants={merchants}
           allMerchants={allMerchants}
           loading={loadingMerchants}
           filter={filter}
           setFilter={setFilter}
+          currencyFilter={currencyFilter}
+          setCurrencyFilter={setCurrencyFilter}
           search={search}
           setSearch={setSearch}
           sortBy={sortBy}
@@ -98,6 +123,8 @@ function DashboardApp() {
           loading={loadingMerchants}
           filter={filter}
           setFilter={setFilter}
+          currencyFilter={currencyFilter}
+          setCurrencyFilter={setCurrencyFilter}
           search={search}
           setSearch={setSearch}
           sortBy={sortBy}
@@ -148,7 +175,7 @@ function DashboardApp() {
       <AddTicketModal
         isOpen={isAddTicketOpen}
         onClose={() => setIsAddTicketOpen(false)}
-        defaultTicketPrice={stats?.ticketPrice || 10}
+        defaultTicketPrice={stats?.ticketPriceCOP || 50000}
         existingMerchants={allMerchants}
         onRegisterNewMerchant={createMerchant}
         onAddTicketsToExisting={(id, count) => addTickets(id, count)}
@@ -166,7 +193,7 @@ function DashboardApp() {
         onAddTicket={() => setIsAddTicketOpen(true)}
       />
 
-      {/* Quick Abono Modal */}
+      {/* Quick Abono Modal con Recibo WhatsApp */}
       <QuickAbonoModal
         merchant={abonoMerchant}
         isOpen={Boolean(abonoMerchant)}
@@ -190,6 +217,25 @@ function DashboardApp() {
         onClose={() => setIsConfigOpen(false)}
         stats={stats}
         onSave={updateCampaign}
+      />
+
+      {/* Backup and Restore Modal */}
+      <BackupModal
+        isOpen={isBackupOpen}
+        onClose={() => setIsBackupOpen(false)}
+        onDataRestored={async () => {
+          await refreshMerchants();
+          await refreshStats();
+        }}
+      />
+
+      {/* Quick Search Spotlight Modal (Ctrl+K) */}
+      <QuickSearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        merchants={allMerchants}
+        onSelectMerchant={setDetailMerchant}
+        onOpenAbono={setAbonoMerchant}
       />
     </AppLayout>
   );

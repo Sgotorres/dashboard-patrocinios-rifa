@@ -3,10 +3,11 @@ import { Modal } from '../common/Modal';
 import { LogoAvatar } from '../common/LogoAvatar';
 import type { Merchant } from '../../../domain/models/Merchant';
 import {
-  MapPin, Phone, MessageCircle, Ticket, DollarSign,
-  Calendar, CheckCircle, Plus, Edit, Trash2, Globe, ExternalLink, AtSign
+  MapPin, Phone, MessageCircle, DollarSign,
+  Ticket, Calendar, CheckCircle, Edit, Trash2, Globe, AtSign, PlusCircle, ExternalLink
 } from 'lucide-react';
 import { cleanSocialHandle } from '../../../core/utils/logoResolver';
+import { formatMoney, getCurrencyBadge } from '../../../core/utils/currencyFormatter';
 
 interface Props {
   merchant: Merchant | null;
@@ -16,7 +17,7 @@ interface Props {
   onMarkAsPaid: (id: string) => void;
   onEdit: (merchant: Merchant) => void;
   onDelete: (id: string) => void;
-  onAddTicket: (merchant: Merchant) => void;
+  onAddTicket: () => void;
 }
 
 export const MerchantDetailModal: React.FC<Props> = ({
@@ -31,17 +32,19 @@ export const MerchantDetailModal: React.FC<Props> = ({
 }) => {
   if (!merchant) return null;
 
+  const currency = merchant.currency || 'COP';
   const remaining = Math.max(0, merchant.totalFee - merchant.amountPaid);
   const cleanPhone = merchant.phone.replace(/[^0-9]/g, '');
   const waCobroMsg = encodeURIComponent(
-    `Hola ${merchant.name}, te escribimos de la Gran Rifa para coordinar el saldo pendiente de $${remaining.toFixed(2)} por sus ${merchant.ticketsCount} tickets de patrocinio.`
+    `Hola ${merchant.name}, te escribimos de la Publicidad en Cine & Sorteo a la Playa para coordinar el saldo pendiente de ${formatMoney(remaining, currency, true)} por sus ${merchant.ticketsCount} boletos de patrocinio.`
   );
   const waCobroUrl = `https://wa.me/${cleanPhone}?text=${waCobroMsg}`;
+  const currBadge = getCurrencyBadge(currency);
 
   const statusConfigs = {
-    paid: { label: 'SOLVENTE / PAGADO', subtitle: 'Comercio al día con sus tickets', bgClass: 'bg-emerald-600 text-white border-emerald-500' },
-    pending: { label: 'ABONO PARCIAL', subtitle: `Resta por pagar: $${remaining.toFixed(2)}`, bgClass: 'bg-amber-400 text-amber-950 border-amber-300 font-extrabold' },
-    unpaid: { label: 'DEUDOR TOTAL', subtitle: `Debe la totalidad: $${merchant.totalFee.toFixed(2)}`, bgClass: 'bg-rose-600 text-white border-rose-500 font-extrabold' },
+    paid: { label: 'SOLVENTE / PAGADO', subtitle: 'Patrocinador al día con su publicidad', bgClass: 'bg-emerald-600 text-white border-emerald-500' },
+    pending: { label: 'ABONO PARCIAL', subtitle: `Resta por pagar: ${formatMoney(remaining, currency, true)}`, bgClass: 'bg-amber-400 text-amber-950 border-amber-300 font-extrabold' },
+    unpaid: { label: 'DEUDOR TOTAL', subtitle: `Debe la totalidad: ${formatMoney(merchant.totalFee, currency, true)}`, bgClass: 'bg-rose-600 text-white border-rose-500 font-extrabold' },
   }[merchant.paymentStatus];
 
   return (
@@ -57,9 +60,14 @@ export const MerchantDetailModal: React.FC<Props> = ({
               size="lg"
             />
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight">
-                {merchant.name}
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                  {merchant.name}
+                </h2>
+                <span className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded-md border ${currBadge.bgClass} ${currBadge.textClass} ${currBadge.borderClass}`}>
+                  {currBadge.flag} {currBadge.label}
+                </span>
+              </div>
               <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mt-1">
                 <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-400" />
                 <span className="line-clamp-1">{merchant.address}</span>
@@ -70,7 +78,7 @@ export const MerchantDetailModal: React.FC<Props> = ({
             <button
               onClick={() => { onClose(); onEdit(merchant); }}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-              title="Editar comercio"
+              title="Editar patrocinador"
             >
               <Edit className="w-4 h-4" />
             </button>
@@ -82,7 +90,7 @@ export const MerchantDetailModal: React.FC<Props> = ({
                 }
               }}
               className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-              title="Eliminar comercio"
+              title="Eliminar patrocinador"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -96,8 +104,8 @@ export const MerchantDetailModal: React.FC<Props> = ({
             <div className="text-xs opacity-90">{statusConfigs.subtitle}</div>
           </div>
           <div className="text-right">
-            <div className="text-lg font-black">${merchant.amountPaid.toFixed(2)}</div>
-            <div className="text-[10px] opacity-80 uppercase font-semibold">de ${merchant.totalFee.toFixed(2)} total</div>
+            <div className="text-lg font-black">{formatMoney(merchant.amountPaid, currency)}</div>
+            <div className="text-[10px] opacity-80 uppercase font-semibold">de {formatMoney(merchant.totalFee, currency)} total</div>
           </div>
         </div>
 
@@ -143,10 +151,10 @@ export const MerchantDetailModal: React.FC<Props> = ({
           <div className="p-3 bg-slate-100 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
             <div className="flex items-center justify-center gap-1 text-slate-500 dark:text-slate-400 mb-0.5">
               <Ticket className="w-3.5 h-3.5 text-indigo-500" />
-              <span className="text-[11px]">Tickets</span>
+              <span className="text-[11px]">Boletos Sorteo</span>
             </div>
             <div className="text-lg font-black text-indigo-600 dark:text-indigo-400">{merchant.ticketsCount}</div>
-            <div className="text-[10px] text-slate-400">${merchant.ticketPrice.toFixed(2)} c/u</div>
+            <div className="text-[10px] text-slate-400">{formatMoney(merchant.ticketPrice, currency)} c/u</div>
           </div>
 
           <div className="p-3 bg-slate-100 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
@@ -154,7 +162,7 @@ export const MerchantDetailModal: React.FC<Props> = ({
               <DollarSign className="w-3.5 h-3.5 text-emerald-500" />
               <span className="text-[11px]">Abonado</span>
             </div>
-            <div className="text-lg font-black text-emerald-600 dark:text-emerald-400">${merchant.amountPaid.toFixed(2)}</div>
+            <div className="text-lg font-black text-emerald-600 dark:text-emerald-400">{formatMoney(merchant.amountPaid, currency)}</div>
             <div className="text-[10px] text-slate-400">Total pagado</div>
           </div>
 
@@ -163,75 +171,97 @@ export const MerchantDetailModal: React.FC<Props> = ({
               <span className="text-[11px]">Saldo Deuda</span>
             </div>
             <div className={`text-lg font-black ${remaining > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}`}>
-              ${remaining.toFixed(2)}
+              {formatMoney(remaining, currency)}
             </div>
             <div className="text-[10px] text-slate-400">{remaining > 0 ? 'Pendiente' : 'Al día'}</div>
           </div>
         </div>
 
-        {/* Abono Payment History */}
-        <div className="space-y-2">
-          <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
-            <span>Historial de Abonos Registrados</span>
-            <span className="text-[11px] font-normal text-slate-500">
-              {merchant.paymentHistory.length} transacciones
-            </span>
-          </h4>
-
-          {merchant.paymentHistory.length === 0 ? (
-            <p className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl text-slate-400 text-center">
-              No tiene abonos registrados aún. Estado: Deudor.
-            </p>
-          ) : (
-            <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-              {merchant.paymentHistory.map((p) => (
-                <div
-                  key={p.id}
-                  className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-lg"
-                >
-                  <div>
-                    <div className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">+${p.amount.toFixed(2)}</span>
-                      <span className="text-[11px] text-slate-500">{p.note || 'Abono'}</span>
-                    </div>
-                  </div>
-                  <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    <span>{new Date(p.date).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
         {/* Action Buttons */}
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-wrap items-center gap-2 pt-1">
           {merchant.paymentStatus !== 'paid' && (
             <>
               <button
-                onClick={() => { onClose(); onOpenAbono(merchant); }}
-                className="flex-1 min-w-[120px] py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-amber-950 font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                onClick={() => {
+                  onClose();
+                  onOpenAbono(merchant);
+                }}
+                className="flex-1 py-2 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <DollarSign className="w-4 h-4" />
-                <span>Registrar Abono</span>
+                <span>Registrar Abono ({currency})</span>
               </button>
               <button
-                onClick={() => { onMarkAsPaid(merchant.id); onClose(); }}
-                className="flex-1 min-w-[120px] py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                onClick={() => {
+                  onMarkAsPaid(merchant.id);
+                  onClose();
+                }}
+                className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <CheckCircle className="w-4 h-4" />
-                <span>Liquidar Deuda</span>
+                <span>Liquidar Deuda Total</span>
               </button>
             </>
           )}
+
           <button
-            onClick={() => { onClose(); onAddTicket(merchant); }}
-            className="py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+            onClick={() => {
+              onClose();
+              onAddTicket();
+            }}
+            className="py-2 px-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold flex items-center gap-1 border border-indigo-200 dark:border-indigo-900 cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
-            <span>+ Tickets</span>
+            <PlusCircle className="w-4 h-4" />
+            <span>Sumar Boletos</span>
           </button>
+        </div>
+
+        {/* Historial de Abonos */}
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[11px]">
+              Historial de Pagos y Abonos ({merchant.paymentHistory.length})
+            </span>
+            <span className="text-[11px] text-slate-400">Orden cronológico</span>
+          </div>
+
+          {merchant.paymentHistory.length === 0 ? (
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-center text-slate-400">
+              No se han registrado abonos previos para este patrocinador.
+            </div>
+          ) : (
+            <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+              {merchant.paymentHistory.map((p) => {
+                const dateStr = new Date(p.date).toLocaleDateString('es-CO', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
+
+                return (
+                  <div
+                    key={p.id}
+                    className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs"
+                  >
+                    <div>
+                      <div className="font-semibold text-slate-800 dark:text-slate-200">
+                        {p.note || 'Abono a cuenta'}
+                      </div>
+                      <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-0.5">
+                        <Calendar className="w-3 h-3" />
+                        <span>{dateStr}</span>
+                      </div>
+                    </div>
+                    <div className="font-black text-emerald-600 dark:text-emerald-400 text-sm">
+                      +{formatMoney(p.amount, currency, true)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </Modal>

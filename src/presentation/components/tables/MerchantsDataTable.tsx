@@ -7,6 +7,7 @@ import {
   CheckCircle, Plus, Store, AtSign
 } from 'lucide-react';
 import { cleanSocialHandle } from '../../../core/utils/logoResolver';
+import { formatMoney, getCurrencyBadge } from '../../../core/utils/currencyFormatter';
 
 interface Props {
   merchants: Merchant[];
@@ -40,10 +41,10 @@ export const MerchantsDataTable: React.FC<Props> = ({
           <Store className="w-6 h-6" />
         </div>
         <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">
-          No se encontraron comercios
+          No se encontraron patrocinadores
         </h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-4">
-          No hay registros coincidentes con los filtros actuales. Puedes registrar un nuevo boleto de patrocinio.
+          No hay registros coincidentes con los filtros actuales. Puedes registrar un nuevo espacio publicitario con boletos de sorteo.
         </p>
         <button
           onClick={onOpenAddTicket}
@@ -58,13 +59,126 @@ export const MerchantsDataTable: React.FC<Props> = ({
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-      <div className="overflow-x-auto">
+      {/* ============================================================== */}
+      {/* VISTA MÓVIL (Tarjetas ergonómicas para pantalla de teléfono)   */}
+      {/* ============================================================== */}
+      <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+        {merchants.map((m) => {
+          const currency = m.currency || 'COP';
+          const remaining = Math.max(0, m.totalFee - m.amountPaid);
+          const cleanPhone = m.phone.replace(/[^0-9]/g, '');
+          const waMsg = encodeURIComponent(
+            `Hola ${m.name}, te escribimos de la Publicidad en Cine & Sorteo a la Playa para coordinar el saldo pendiente de ${formatMoney(remaining, currency, true)}.`
+          );
+          const waUrl = `https://wa.me/${cleanPhone}?text=${waMsg}`;
+          const currBadge = getCurrencyBadge(currency);
+
+          return (
+            <div key={m.id} className="p-4 space-y-3">
+              {/* Encabezado Comercio */}
+              <div className="flex items-start justify-between gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => onSelectMerchant(m)}
+                  className="flex items-center gap-3 text-left min-w-0 flex-1 cursor-pointer"
+                >
+                  <LogoAvatar
+                    name={m.name}
+                    logoUrl={m.logoUrl}
+                    socialUrl={m.socialUrl}
+                    size="md"
+                  />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                        {m.name}
+                      </h4>
+                      <span className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded-md border ${currBadge.bgClass} ${currBadge.textClass} ${currBadge.borderClass}`}>
+                        {currBadge.flag} {currBadge.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                      <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span className="truncate">{m.address}</span>
+                    </div>
+                  </div>
+                </button>
+
+                <div className="shrink-0">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 font-extrabold text-[11px] border border-indigo-200 dark:border-indigo-900/60">
+                    <Ticket className="w-3 h-3" />
+                    <span>{m.ticketsCount}</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Casilla de Estado / Montos */}
+              <div
+                onClick={() => onSelectMerchant(m)}
+                className="cursor-pointer"
+              >
+                <StatusCell
+                  status={m.paymentStatus}
+                  amountPaid={m.amountPaid}
+                  totalFee={m.totalFee}
+                  currency={currency}
+                  onClick={() => onSelectMerchant(m)}
+                />
+              </div>
+
+              {/* Barra de Acciones Móviles */}
+              <div className="flex items-center gap-2 pt-1">
+                {cleanPhone && remaining > 0 && (
+                  <a
+                    href={waUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 py-2 px-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                  >
+                    <MessageCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>Cobrar WhatsApp</span>
+                  </a>
+                )}
+
+                {m.paymentStatus !== 'paid' && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenAbono(m)}
+                    className="flex-1 py-2 px-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                  >
+                    <DollarSign className="w-4 h-4" />
+                    <span>Abonar</span>
+                  </button>
+                )}
+
+                {m.paymentStatus !== 'paid' && (
+                  <button
+                    type="button"
+                    onClick={() => onMarkAsPaid(m.id)}
+                    className="py-2 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1 cursor-pointer active:scale-95 transition-all"
+                    title="Liquidar Total"
+                  >
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    <span className="hidden sm:inline">Liquidar</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ============================================================== */}
+      {/* VISTA ESCRITORIO (Tabla expandida para laptop)                */}
+      {/* ============================================================== */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               <th className="py-3.5 px-4">Establecimiento</th>
-              <th className="py-3.5 px-3 text-center">Tickets</th>
-              <th className="py-3.5 px-3">Total Cuota</th>
+              <th className="py-3.5 px-3 text-center">Moneda</th>
+              <th className="py-3.5 px-3 text-center">Boletos</th>
+              <th className="py-3.5 px-3">Total Pautado</th>
               <th className="py-3.5 px-3">Abonado</th>
               <th className="py-3.5 px-3">Saldo Deuda</th>
               <th className="py-3.5 px-4 min-w-[170px]">Estado de Cuenta (Click detalle)</th>
@@ -73,12 +187,14 @@ export const MerchantsDataTable: React.FC<Props> = ({
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
             {merchants.map((m) => {
+              const currency = m.currency || 'COP';
               const remaining = Math.max(0, m.totalFee - m.amountPaid);
               const cleanPhone = m.phone.replace(/[^0-9]/g, '');
               const waMsg = encodeURIComponent(
-                `Hola ${m.name}, te escribimos de la Gran Rifa para coordinar el saldo pendiente de $${remaining.toFixed(2)}.`
+                `Hola ${m.name}, te escribimos de la Publicidad de Cine & Sorteo a la Playa para coordinar el saldo pendiente de ${formatMoney(remaining, currency, true)}.`
               );
               const waUrl = `https://wa.me/${cleanPhone}?text=${waMsg}`;
+              const currBadge = getCurrencyBadge(currency);
 
               return (
                 <tr
@@ -132,6 +248,14 @@ export const MerchantsDataTable: React.FC<Props> = ({
                     </div>
                   </td>
 
+                  {/* Moneda */}
+                  <td className="py-3.5 px-3 text-center">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-extrabold border ${currBadge.bgClass} ${currBadge.textClass} ${currBadge.borderClass}`}>
+                      <span>{currBadge.flag}</span>
+                      <span>{currBadge.label}</span>
+                    </span>
+                  </td>
+
                   {/* Tickets */}
                   <td className="py-3.5 px-3 text-center">
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 font-extrabold border border-indigo-200 dark:border-indigo-900/60">
@@ -141,19 +265,19 @@ export const MerchantsDataTable: React.FC<Props> = ({
                   </td>
 
                   {/* Total Cuota */}
-                  <td className="py-3.5 px-3 font-bold text-slate-900 dark:text-white">
-                    ${m.totalFee.toFixed(2)}
+                  <td className="py-3.5 px-3 font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                    {formatMoney(m.totalFee, currency)}
                   </td>
 
                   {/* Abonado */}
-                  <td className="py-3.5 px-3 font-bold text-emerald-600 dark:text-emerald-400">
-                    ${m.amountPaid.toFixed(2)}
+                  <td className="py-3.5 px-3 font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                    {formatMoney(m.amountPaid, currency)}
                   </td>
 
                   {/* Saldo Deuda */}
-                  <td className="py-3.5 px-3 font-bold">
+                  <td className="py-3.5 px-3 font-bold whitespace-nowrap">
                     <span className={remaining > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}>
-                      ${remaining.toFixed(2)}
+                      {formatMoney(remaining, currency)}
                     </span>
                   </td>
 
@@ -163,11 +287,12 @@ export const MerchantsDataTable: React.FC<Props> = ({
                       status={m.paymentStatus}
                       amountPaid={m.amountPaid}
                       totalFee={m.totalFee}
+                      currency={currency}
                       onClick={() => onSelectMerchant(m)}
                     />
                   </td>
 
-                  {/* Acciones */}
+                  {/* Acciones Rápidas */}
                   <td className="py-3.5 px-4 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       {cleanPhone && remaining > 0 && (

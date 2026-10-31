@@ -8,6 +8,7 @@ interface Props {
   counts: { all: number; paid: number; pending: number; unpaid: number };
   campaignName: string;
   onOpenAddTicket: () => void;
+  onOpenBackup: () => void;
   children: React.ReactNode;
 }
 
@@ -17,6 +18,7 @@ export const AppLayout: React.FC<Props> = ({
   counts,
   campaignName,
   onOpenAddTicket,
+  onOpenBackup,
   children,
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -37,6 +39,7 @@ export const AppLayout: React.FC<Props> = ({
           activeTab={activeTab}
           onOpenMobileSidebar={() => setMobileOpen(true)}
           onOpenAddTicket={onOpenAddTicket}
+          onOpenBackup={onOpenBackup}
           campaignName={campaignName}
         />
 

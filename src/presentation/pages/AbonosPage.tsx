@@ -4,8 +4,9 @@ import { MerchantsDataTable } from '../components/tables/MerchantsDataTable';
 import { ExcelExportModal } from '../components/common/ExcelExportModal';
 import type { Merchant } from '../../domain/models/Merchant';
 import type { RaffleStats } from '../../domain/models/RaffleStats';
-import type { SortOption } from '../hooks/useMerchants';
+import type { CurrencyFilter, SortOption } from '../hooks/useMerchants';
 import { Clock, DollarSign, FileSpreadsheet } from 'lucide-react';
+import { formatMoney } from '../../core/utils/currencyFormatter';
 
 interface Props {
   allMerchants: Merchant[];
@@ -15,7 +16,7 @@ interface Props {
   setSearch: (s: string) => void;
   sortBy: SortOption;
   setSortBy: (s: SortOption) => void;
-  counts: { all: number; paid: number; pending: number; unpaid: number };
+  counts: { all: number; paid: number; pending: number; unpaid: number; cop?: number; usd?: number };
   onSelectMerchant: (m: Merchant) => void;
   onOpenAbono: (m: Merchant) => void;
   onMarkAsPaid: (id: string) => void;
@@ -37,11 +38,13 @@ export const AbonosPage: React.FC<Props> = ({
   onOpenAddTicket,
 }) => {
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [currencyFilter, setCurrencyFilter] = useState<CurrencyFilter>('all');
 
   const abonosMerchants = useMemo(() => {
     const query = search.toLowerCase().trim();
     return allMerchants
       .filter((m) => m.paymentStatus === 'pending')
+      .filter((m) => currencyFilter === 'all' || (m.currency || 'COP') === currencyFilter)
       .filter((m) => {
         if (!query) return true;
         return (
@@ -50,14 +53,30 @@ export const AbonosPage: React.FC<Props> = ({
           m.address.toLowerCase().includes(query)
         );
       });
-  }, [allMerchants, search]);
+  }, [allMerchants, search, currencyFilter]);
 
-  const totalAbonado = useMemo(() => {
-    return abonosMerchants.reduce((sum, m) => sum + m.amountPaid, 0);
+  const totalAbonadoCOP = useMemo(() => {
+    return abonosMerchants
+      .filter((m) => (m.currency || 'COP') === 'COP')
+      .reduce((sum, m) => sum + m.amountPaid, 0);
   }, [abonosMerchants]);
 
-  const totalRestante = useMemo(() => {
-    return abonosMerchants.reduce((sum, m) => sum + (m.totalFee - m.amountPaid), 0);
+  const totalAbonadoUSD = useMemo(() => {
+    return abonosMerchants
+      .filter((m) => m.currency === 'USD')
+      .reduce((sum, m) => sum + m.amountPaid, 0);
+  }, [abonosMerchants]);
+
+  const totalRestanteCOP = useMemo(() => {
+    return abonosMerchants
+      .filter((m) => (m.currency || 'COP') === 'COP')
+      .reduce((sum, m) => sum + (m.totalFee - m.amountPaid), 0);
+  }, [abonosMerchants]);
+
+  const totalRestanteUSD = useMemo(() => {
+    return abonosMerchants
+      .filter((m) => m.currency === 'USD')
+      .reduce((sum, m) => sum + (m.totalFee - m.amountPaid), 0);
   }, [abonosMerchants]);
 
   return (
@@ -78,39 +97,40 @@ export const AbonosPage: React.FC<Props> = ({
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Establecimientos que han dado cuotas iniciales y registran saldo pendiente
+              Patrocinadores con cuotas iniciales recibidas y saldos por liquidar
             </p>
           </div>
         </div>
 
+        {/* Cajas Bimoneda de Abonos */}
         <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
           <div className="bg-white dark:bg-slate-900/90 border border-amber-300 dark:border-amber-800 p-2.5 rounded-xl flex items-center gap-2 shadow-xs">
             <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <div>
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Total Abonado</span>
-              <div className="text-base font-black text-emerald-600 dark:text-emerald-400">
-                ${totalAbonado.toFixed(2)}
+              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Abonado (COP / USD)</span>
+              <div className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400">
+                {formatMoney(totalAbonadoCOP, 'COP', true)} • {formatMoney(totalAbonadoUSD, 'USD', true)}
               </div>
             </div>
           </div>
 
           <div className="bg-white dark:bg-slate-900/90 border border-amber-300 dark:border-amber-800 p-2.5 rounded-xl flex items-center gap-2 shadow-xs">
-            <DollarSign className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+            <DollarSign className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             <div>
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Por Cobrar</span>
-              <div className="text-base font-black text-amber-500 dark:text-amber-400">
-                ${totalRestante.toFixed(2)}
+              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Por Cobrar (COP / USD)</span>
+              <div className="text-xs sm:text-sm font-black text-amber-600 dark:text-amber-400">
+                {formatMoney(totalRestanteCOP, 'COP', true)} • {formatMoney(totalRestanteUSD, 'USD', true)}
               </div>
             </div>
           </div>
 
           <button
             onClick={() => setIsExportOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 text-xs font-bold transition-colors cursor-pointer shadow-xs"
+            className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
             title="Exportar abonos a Excel"
           >
-            <FileSpreadsheet className="w-4 h-4" />
-            <span className="hidden sm:inline">Excel Abonos</span>
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            <span className="hidden md:inline">Descargar</span>
           </button>
         </div>
       </div>
@@ -118,13 +138,14 @@ export const AbonosPage: React.FC<Props> = ({
       <TableFilterBar
         activeFilter="pending"
         onSelectFilter={() => {}}
+        currencyFilter={currencyFilter}
+        onSelectCurrencyFilter={setCurrencyFilter}
         search={search}
         onSearchChange={setSearch}
         sortBy={sortBy}
         onSortChange={setSortBy}
         counts={counts}
         onOpenAddTicket={onOpenAddTicket}
-        onExportExcel={() => setIsExportOpen(true)}
         showStatusFilters={false}
       />
 
@@ -142,8 +163,8 @@ export const AbonosPage: React.FC<Props> = ({
         onClose={() => setIsExportOpen(false)}
         merchants={abonosMerchants}
         stats={stats}
-        title="Exportar Lista de Abonos"
-        defaultFileName="reporte-abonos-rifa"
+        title="Exportar Reporte de Abonos"
+        defaultFileName="abonos-patrocinios-cine"
       />
     </div>
   );

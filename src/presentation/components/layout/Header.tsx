@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Plus } from 'lucide-react';
+import { Menu, Plus, ShieldCheck } from 'lucide-react';
 import { ThemeToggle } from '../common/ThemeToggle';
 import type { ActiveTab } from './Sidebar';
 
@@ -7,6 +7,7 @@ interface Props {
   activeTab: ActiveTab;
   onOpenMobileSidebar: () => void;
   onOpenAddTicket: () => void;
+  onOpenBackup: () => void;
   campaignName: string;
 }
 
@@ -14,6 +15,7 @@ export const Header: React.FC<Props> = ({
   activeTab,
   onOpenMobileSidebar,
   onOpenAddTicket,
+  onOpenBackup,
   campaignName,
 }) => {
   const titles: Record<ActiveTab, { title: string; subtitle: string }> = {
@@ -59,6 +61,16 @@ export const Header: React.FC<Props> = ({
       </div>
 
       <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onOpenBackup}
+          className="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+          title="Copia de seguridad y restauración de datos"
+        >
+          <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <span className="hidden md:inline">Respaldo</span>
+        </button>
+
         <ThemeToggle className="hidden sm:flex" />
 
         <button

@@ -1,14 +1,7 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { ThemeContext, type Theme, type ThemeContextType } from './ThemeContextDefinition';
 
-export type Theme = 'light' | 'dark';
-
-export interface ThemeContextType {
-  theme: Theme;
-  toggleTheme: () => void;
-  setTheme: (theme: Theme) => void;
-}
-
-export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+export type { Theme, ThemeContextType };
 
 const THEME_STORAGE_KEY = 'app-theme-preference';
 

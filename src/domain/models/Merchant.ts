@@ -1,10 +1,12 @@
 export type PaymentStatus = 'unpaid' | 'pending' | 'paid';
+export type CurrencyCode = 'COP' | 'USD';
 
 export interface PaymentRecord {
   id: string;
   amount: number;
   date: string;
   note?: string;
+  currency?: CurrencyCode;
 }
 
 export interface Merchant {
@@ -14,7 +16,8 @@ export interface Merchant {
   phone: string;
   socialUrl?: string; // Red social, usuario o link web
   logoUrl?: string;   // URL o base64 del logotipo
-  ticketsCount: number; // Cantidad de tickets comprados
+  currency: CurrencyCode; // 'COP' (Pesos Colombianos) o 'USD' (Dólares)
+  ticketsCount: number; // Cantidad de tickets / espacios publicitarios
   ticketPrice: number;  // Precio unitario del ticket
   totalFee: number;     // Total facturado (ticketsCount * ticketPrice)
   amountPaid: number;   // Total abonado
@@ -30,6 +33,7 @@ export interface CreateMerchantDTO {
   phone: string;
   socialUrl?: string;
   logoUrl?: string;
+  currency?: CurrencyCode;
   ticketsCount: number;
   ticketPrice: number;
   totalFee?: number;
