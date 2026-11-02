@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { TableFilterBar } from '../components/tables/TableFilterBar';
 import { MerchantsDataTable } from '../components/tables/MerchantsDataTable';
 import { ExcelExportModal } from '../components/common/ExcelExportModal';
+import { TriCurrencyAmount } from '../components/currency/TriCurrencyAmount';
 import type { Merchant } from '../../domain/models/Merchant';
 import type { RaffleStats } from '../../domain/models/RaffleStats';
 import type { SortOption } from '../hooks/useMerchants';
@@ -86,8 +87,8 @@ export const DebtorsPage: React.FC<Props> = ({
               <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                 Cartera Vencida
               </span>
-              <div className="text-xl font-black text-rose-600 dark:text-rose-400">
-                ${totalDebt.toFixed(2)}
+              <div className="text-rose-600 dark:text-rose-400">
+                <TriCurrencyAmount amountInUsd={totalDebt} size="lg" />
               </div>
             </div>
           </div>
@@ -98,7 +99,7 @@ export const DebtorsPage: React.FC<Props> = ({
             title="Exportar lista de deudores a Excel"
           >
             <FileSpreadsheet className="w-4 h-4" />
-            <span className="hidden sm:inline">Excel Deudores</span>
+            <span className="hidden sm:inline">Exportar Deudores</span>
           </button>
         </div>
       </div>

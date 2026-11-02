@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal } from '../common/Modal';
 import { LogoAvatar } from '../common/LogoAvatar';
 import type { Merchant } from '../../../domain/models/Merchant';
+import { useCurrency } from '../../hooks/useCurrency';
 import {
   MapPin, Phone, MessageCircle, Ticket, DollarSign,
   Calendar, CheckCircle, Plus, Edit, Trash2, Globe, ExternalLink, AtSign
@@ -29,19 +30,24 @@ export const MerchantDetailModal: React.FC<Props> = ({
   onDelete,
   onAddTicket,
 }) => {
+  const { formatAmount, getTriBreakdown } = useCurrency();
   if (!merchant) return null;
 
   const remaining = Math.max(0, merchant.totalFee - merchant.amountPaid);
   const cleanPhone = merchant.phone.replace(/[^0-9]/g, '');
+  const b = getTriBreakdown(remaining);
+  const totalB = getTriBreakdown(merchant.totalFee);
+  const paidB = getTriBreakdown(merchant.amountPaid);
+
   const waCobroMsg = encodeURIComponent(
-    `Hola ${merchant.name}, te escribimos de la Gran Rifa para coordinar el saldo pendiente de $${remaining.toFixed(2)} por sus ${merchant.ticketsCount} tickets de patrocinio.`
+    `Hola ${merchant.name}, le escribimos de la Gran Rifa para coordinar el saldo pendiente de ${b.usd} (equiv. ${b.ves} a Tasa BCV o ${b.cop}) por sus ${merchant.ticketsCount} tickets.`
   );
   const waCobroUrl = `https://wa.me/${cleanPhone}?text=${waCobroMsg}`;
 
   const statusConfigs = {
     paid: { label: 'SOLVENTE / PAGADO', subtitle: 'Comercio al día con sus tickets', bgClass: 'bg-emerald-600 text-white border-emerald-500' },
-    pending: { label: 'ABONO PARCIAL', subtitle: `Resta por pagar: $${remaining.toFixed(2)}`, bgClass: 'bg-amber-400 text-amber-950 border-amber-300 font-extrabold' },
-    unpaid: { label: 'DEUDOR TOTAL', subtitle: `Debe la totalidad: $${merchant.totalFee.toFixed(2)}`, bgClass: 'bg-rose-600 text-white border-rose-500 font-extrabold' },
+    pending: { label: 'ABONO PARCIAL', subtitle: `Resta: ${b.usd} (${b.ves} • ${b.cop})`, bgClass: 'bg-amber-400 text-amber-950 border-amber-300 font-extrabold' },
+    unpaid: { label: 'DEUDOR TOTAL', subtitle: `Deuda total: ${totalB.usd} (${totalB.ves} • ${totalB.cop})`, bgClass: 'bg-rose-600 text-white border-rose-500 font-extrabold' },
   }[merchant.paymentStatus];
 
   return (
@@ -50,12 +56,7 @@ export const MerchantDetailModal: React.FC<Props> = ({
         {/* Header Profile */}
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <LogoAvatar
-              name={merchant.name}
-              logoUrl={merchant.logoUrl}
-              socialUrl={merchant.socialUrl}
-              size="lg"
-            />
+            <LogoAvatar name={merchant.name} logoUrl={merchant.logoUrl} socialUrl={merchant.socialUrl} size="lg" />
             <div>
               <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight">
                 {merchant.name}
@@ -96,8 +97,8 @@ export const MerchantDetailModal: React.FC<Props> = ({
             <div className="text-xs opacity-90">{statusConfigs.subtitle}</div>
           </div>
           <div className="text-right">
-            <div className="text-lg font-black">${merchant.amountPaid.toFixed(2)}</div>
-            <div className="text-[10px] opacity-80 uppercase font-semibold">de ${merchant.totalFee.toFixed(2)} total</div>
+            <div className="text-lg font-black">{paidB.usd}</div>
+            <div className="text-[10px] opacity-80 uppercase font-semibold">de {totalB.usd} ({totalB.ves})</div>
           </div>
         </div>
 
@@ -116,7 +117,7 @@ export const MerchantDetailModal: React.FC<Props> = ({
                 className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-xs"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
-                <span>WhatsApp Cobranza</span>
+                <span>Cobrar por WhatsApp</span>
               </a>
             )}
             {merchant.socialUrl && (() => {
@@ -154,8 +155,8 @@ export const MerchantDetailModal: React.FC<Props> = ({
               <DollarSign className="w-3.5 h-3.5 text-emerald-500" />
               <span className="text-[11px]">Abonado</span>
             </div>
-            <div className="text-lg font-black text-emerald-600 dark:text-emerald-400">${merchant.amountPaid.toFixed(2)}</div>
-            <div className="text-[10px] text-slate-400">Total pagado</div>
+            <div className="text-lg font-black text-emerald-600 dark:text-emerald-400">{formatAmount(merchant.amountPaid)}</div>
+            <div className="text-[10px] text-slate-400">{paidB.ves}</div>
           </div>
 
           <div className="p-3 bg-slate-100 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
@@ -163,9 +164,9 @@ export const MerchantDetailModal: React.FC<Props> = ({
               <span className="text-[11px]">Saldo Deuda</span>
             </div>
             <div className={`text-lg font-black ${remaining > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}`}>
-              ${remaining.toFixed(2)}
+              {formatAmount(remaining)}
             </div>
-            <div className="text-[10px] text-slate-400">{remaining > 0 ? 'Pendiente' : 'Al día'}</div>
+            <div className="text-[10px] text-slate-400">{remaining > 0 ? b.ves : 'Solvente'}</div>
           </div>
         </div>
 
@@ -189,11 +190,9 @@ export const MerchantDetailModal: React.FC<Props> = ({
                   key={p.id}
                   className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-lg"
                 >
-                  <div>
-                    <div className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">+${p.amount.toFixed(2)}</span>
-                      <span className="text-[11px] text-slate-500">{p.note || 'Abono'}</span>
-                    </div>
+                  <div className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">+{formatAmount(p.amount)}</span>
+                    <span className="text-[11px] text-slate-500">{p.note || 'Abono'}</span>
                   </div>
                   <div className="text-[10px] text-slate-400 flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
@@ -206,19 +205,21 @@ export const MerchantDetailModal: React.FC<Props> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="pt-2 flex flex-wrap gap-2 border-t border-slate-100 dark:border-slate-800">
           {merchant.paymentStatus !== 'paid' && (
             <>
               <button
+                type="button"
                 onClick={() => { onClose(); onOpenAbono(merchant); }}
-                className="flex-1 min-w-[120px] py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-amber-950 font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                className="flex-1 min-w-[120px] py-2 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <DollarSign className="w-4 h-4" />
-                <span>Registrar Abono</span>
+                <span>Abonar</span>
               </button>
               <button
+                type="button"
                 onClick={() => { onMarkAsPaid(merchant.id); onClose(); }}
-                className="flex-1 min-w-[120px] py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                className="flex-1 min-w-[120px] py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <CheckCircle className="w-4 h-4" />
                 <span>Liquidar Deuda</span>
@@ -226,11 +227,12 @@ export const MerchantDetailModal: React.FC<Props> = ({
             </>
           )}
           <button
+            type="button"
             onClick={() => { onClose(); onAddTicket(merchant); }}
-            className="py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+            className="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold cursor-pointer flex items-center justify-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Tickets</span>
+            <span>Sumar Tickets</span>
           </button>
         </div>
       </div>

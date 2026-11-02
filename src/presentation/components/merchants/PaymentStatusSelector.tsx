@@ -1,5 +1,6 @@
 import React from 'react';
 import type { PaymentStatus } from '../../../domain/models/Merchant';
+import { useCurrency } from '../../hooks/useCurrency';
 
 interface Props {
   status: PaymentStatus;
@@ -16,6 +17,10 @@ export const PaymentStatusSelector: React.FC<Props> = ({
   onAbonoChange,
   totalAmount,
 }) => {
+  const { getTriBreakdown } = useCurrency();
+  const abonoVal = parseFloat(initialAbono) || 0;
+  const breakdown = getTriBreakdown(abonoVal);
+
   return (
     <div className="space-y-3">
       <div>
@@ -61,9 +66,16 @@ export const PaymentStatusSelector: React.FC<Props> = ({
 
       {status === 'pending' && (
         <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-1">
-          <label className="block font-semibold text-amber-700 dark:text-amber-300">
-            Monto Abonado ($)
-          </label>
+          <div className="flex justify-between items-center">
+            <label className="block font-semibold text-amber-700 dark:text-amber-300">
+              Monto Abonado ($ USD)
+            </label>
+            {abonoVal > 0 && (
+              <span className="text-[10px] text-amber-800 dark:text-amber-200 font-semibold">
+                {breakdown.ves} • {breakdown.cop}
+              </span>
+            )}
+          </div>
           <input
             type="number"
             step="0.5"

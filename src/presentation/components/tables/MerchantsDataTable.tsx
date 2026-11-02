@@ -2,6 +2,7 @@ import React from 'react';
 import type { Merchant } from '../../../domain/models/Merchant';
 import { LogoAvatar } from '../common/LogoAvatar';
 import { StatusCell } from '../common/StatusCell';
+import { useCurrency } from '../../hooks/useCurrency';
 import {
   MapPin, Phone, MessageCircle, Ticket, DollarSign,
   CheckCircle, Plus, Store, AtSign
@@ -25,6 +26,8 @@ export const MerchantsDataTable: React.FC<Props> = ({
   onMarkAsPaid,
   onOpenAddTicket,
 }) => {
+  const { activeCurrency, formatAmount, getTriBreakdown } = useCurrency();
+
   if (loading) {
     return (
       <div className="py-16 text-center text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
@@ -43,7 +46,7 @@ export const MerchantsDataTable: React.FC<Props> = ({
           No se encontraron comercios
         </h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-4">
-          No hay registros coincidentes con los filtros actuales. Puedes registrar un nuevo boleto de patrocinio.
+          No hay registros coincidentes. Registra un nuevo patrocinador o ticket.
         </p>
         <button
           onClick={onOpenAddTicket}
@@ -67,7 +70,7 @@ export const MerchantsDataTable: React.FC<Props> = ({
               <th className="py-3.5 px-3">Total Cuota</th>
               <th className="py-3.5 px-3">Abonado</th>
               <th className="py-3.5 px-3">Saldo Deuda</th>
-              <th className="py-3.5 px-4 min-w-[170px]">Estado de Cuenta (Click detalle)</th>
+              <th className="py-3.5 px-4 min-w-[170px]">Estado (Click detalle)</th>
               <th className="py-3.5 px-4 text-right">Acciones Rápidas</th>
             </tr>
           </thead>
@@ -75,25 +78,18 @@ export const MerchantsDataTable: React.FC<Props> = ({
             {merchants.map((m) => {
               const remaining = Math.max(0, m.totalFee - m.amountPaid);
               const cleanPhone = m.phone.replace(/[^0-9]/g, '');
+              const b = getTriBreakdown(remaining);
               const waMsg = encodeURIComponent(
-                `Hola ${m.name}, te escribimos de la Gran Rifa para coordinar el saldo pendiente de $${remaining.toFixed(2)}.`
+                `Hola ${m.name}, te escribimos de la Gran Rifa para coordinar el saldo pendiente de ${b.usd} (equiv. ${b.ves} a Tasa BCV o ${b.cop}).`
               );
               const waUrl = `https://wa.me/${cleanPhone}?text=${waMsg}`;
 
               return (
-                <tr
-                  key={m.id}
-                  className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group"
-                >
+                <tr key={m.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group">
                   {/* Establecimiento */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
-                      <LogoAvatar
-                        name={m.name}
-                        logoUrl={m.logoUrl}
-                        socialUrl={m.socialUrl}
-                        size="md"
-                      />
+                      <LogoAvatar name={m.name} logoUrl={m.logoUrl} socialUrl={m.socialUrl} size="md" />
                       <div className="min-w-0 max-w-[210px]">
                         <button
                           type="button"
@@ -141,23 +137,38 @@ export const MerchantsDataTable: React.FC<Props> = ({
                   </td>
 
                   {/* Total Cuota */}
-                  <td className="py-3.5 px-3 font-bold text-slate-900 dark:text-white">
-                    ${m.totalFee.toFixed(2)}
+                  <td className="py-3.5 px-3">
+                    <div className="font-bold text-slate-900 dark:text-white">
+                      {formatAmount(m.totalFee)}
+                    </div>
+                    <div className="text-[10px] text-slate-400 dark:text-slate-500">
+                      {activeCurrency === 'VES' ? formatAmount(m.totalFee, 'USD') : formatAmount(m.totalFee, 'VES')}
+                    </div>
                   </td>
 
                   {/* Abonado */}
-                  <td className="py-3.5 px-3 font-bold text-emerald-600 dark:text-emerald-400">
-                    ${m.amountPaid.toFixed(2)}
+                  <td className="py-3.5 px-3">
+                    <div className="font-bold text-emerald-600 dark:text-emerald-400">
+                      {formatAmount(m.amountPaid)}
+                    </div>
+                    <div className="text-[10px] text-slate-400 dark:text-slate-500">
+                      {activeCurrency === 'VES' ? formatAmount(m.amountPaid, 'USD') : formatAmount(m.amountPaid, 'VES')}
+                    </div>
                   </td>
 
                   {/* Saldo Deuda */}
-                  <td className="py-3.5 px-3 font-bold">
-                    <span className={remaining > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}>
-                      ${remaining.toFixed(2)}
-                    </span>
+                  <td className="py-3.5 px-3">
+                    <div className={`font-black ${remaining > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}`}>
+                      {formatAmount(remaining)}
+                    </div>
+                    {remaining > 0 && (
+                      <div className="text-[10px] text-slate-400 dark:text-slate-500">
+                        {activeCurrency === 'COP' ? formatAmount(remaining, 'VES') : formatAmount(remaining, 'COP')}
+                      </div>
+                    )}
                   </td>
 
-                  {/* Casilla de Color Completo (Verde, Amarillo, Rojo) */}
+                  {/* Casilla de Color Completo */}
                   <td className="py-3.5 px-4">
                     <StatusCell
                       status={m.paymentStatus}
@@ -176,7 +187,7 @@ export const MerchantsDataTable: React.FC<Props> = ({
                           target="_blank"
                           rel="noreferrer"
                           className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors"
-                          title="Cobrar por WhatsApp"
+                          title="Cobrar por WhatsApp con desglose multimoneda"
                         >
                           <MessageCircle className="w-4 h-4" />
                         </a>

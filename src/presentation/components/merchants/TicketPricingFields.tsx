@@ -1,5 +1,6 @@
 import React from 'react';
 import { Ticket } from 'lucide-react';
+import { useCurrency } from '../../hooks/useCurrency';
 
 interface Props {
   ticketsCount: string;
@@ -16,6 +17,9 @@ export const TicketPricingFields: React.FC<Props> = ({
   onTicketsChange,
   onPriceChange,
 }) => {
+  const { getTriBreakdown } = useCurrency();
+  const breakdown = getTriBreakdown(totalAmount);
+
   return (
     <div className="p-3 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900/50 rounded-xl space-y-3">
       <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-bold">
@@ -47,9 +51,12 @@ export const TicketPricingFields: React.FC<Props> = ({
           />
         </div>
         <div className="col-span-2 sm:col-span-1 bg-white dark:bg-slate-900/80 p-2 rounded-lg border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
-          <span className="text-[10px] text-slate-500">Total a Pagar</span>
+          <span className="text-[10px] text-slate-500 font-semibold">Total a Pagar</span>
           <span className="text-base font-extrabold text-indigo-600 dark:text-indigo-400">
-            ${totalAmount.toFixed(2)}
+            {breakdown.usd}
+          </span>
+          <span className="text-[9px] text-slate-400 leading-tight">
+            {breakdown.ves} • {breakdown.cop}
           </span>
         </div>
       </div>

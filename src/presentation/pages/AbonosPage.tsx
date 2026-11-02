@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { TableFilterBar } from '../components/tables/TableFilterBar';
 import { MerchantsDataTable } from '../components/tables/MerchantsDataTable';
 import { ExcelExportModal } from '../components/common/ExcelExportModal';
+import { TriCurrencyAmount } from '../components/currency/TriCurrencyAmount';
 import type { Merchant } from '../../domain/models/Merchant';
 import type { RaffleStats } from '../../domain/models/RaffleStats';
 import type { SortOption } from '../hooks/useMerchants';
@@ -88,8 +89,8 @@ export const AbonosPage: React.FC<Props> = ({
             <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <div>
               <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Total Abonado</span>
-              <div className="text-base font-black text-emerald-600 dark:text-emerald-400">
-                ${totalAbonado.toFixed(2)}
+              <div className="text-emerald-600 dark:text-emerald-400">
+                <TriCurrencyAmount amountInUsd={totalAbonado} size="md" />
               </div>
             </div>
           </div>
@@ -98,8 +99,8 @@ export const AbonosPage: React.FC<Props> = ({
             <DollarSign className="w-4 h-4 text-amber-500 dark:text-amber-400" />
             <div>
               <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Por Cobrar</span>
-              <div className="text-base font-black text-amber-500 dark:text-amber-400">
-                ${totalRestante.toFixed(2)}
+              <div className="text-amber-500 dark:text-amber-400">
+                <TriCurrencyAmount amountInUsd={totalRestante} size="md" />
               </div>
             </div>
           </div>

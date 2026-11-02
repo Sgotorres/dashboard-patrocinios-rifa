@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ThemeProvider } from './core/context/ThemeContext';
+import { CurrencyProvider } from './core/context/CurrencyContext';
 import { AppLayout } from './presentation/components/layout/AppLayout';
 import type { ActiveTab } from './presentation/components/layout/Sidebar';
 import { useMerchants } from './presentation/hooks/useMerchants';
@@ -198,7 +199,9 @@ function DashboardApp() {
 export function App() {
   return (
     <ThemeProvider>
-      <DashboardApp />
+      <CurrencyProvider>
+        <DashboardApp />
+      </CurrencyProvider>
     </ThemeProvider>
   );
 }
