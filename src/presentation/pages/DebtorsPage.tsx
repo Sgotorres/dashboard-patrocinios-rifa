@@ -1,48 +1,66 @@
-import React, { useMemo, useState } from 'react';
+import React, { useDeferredValue, useMemo, useState } from 'react';
 import { TableFilterBar } from '../components/tables/TableFilterBar';
 import { MerchantsDataTable } from '../components/tables/MerchantsDataTable';
 import { ExcelExportModal } from '../components/common/ExcelExportModal';
 import type { Merchant } from '../../domain/models/Merchant';
 import type { RaffleStats } from '../../domain/models/RaffleStats';
-import type { CurrencyFilter, SortOption } from '../hooks/useMerchants';
+import { sortMerchants, type SortOption } from '../../core/utils/merchantSorter';
+import type { CurrencyFilter } from '../hooks/useMerchants';
 import { AlertTriangle, DollarSign, FileSpreadsheet } from 'lucide-react';
 import { formatMoney } from '../../core/utils/currencyFormatter';
+import { calculateMerchantCounts, useMerchantsStore } from '../stores/useMerchantsStore';
+import { useModalStore } from '../stores/useModalStore';
 
 interface Props {
-  allMerchants: Merchant[];
-  stats: RaffleStats | null;
-  loading: boolean;
-  search: string;
-  setSearch: (s: string) => void;
-  sortBy: SortOption;
-  setSortBy: (s: SortOption) => void;
-  counts: { all: number; paid: number; pending: number; unpaid: number; cop?: number; usd?: number };
-  onSelectMerchant: (m: Merchant) => void;
-  onOpenAbono: (m: Merchant) => void;
-  onMarkAsPaid: (id: string) => void;
-  onOpenAddTicket: () => void;
+  allMerchants?: Merchant[];
+  stats?: RaffleStats | null;
+  loading?: boolean;
+  search?: string;
+  setSearch?: (s: string) => void;
+  sortBy?: SortOption;
+  setSortBy?: (s: SortOption) => void;
+  counts?: { all: number; paid: number; pending: number; unpaid: number; cop?: number; usd?: number };
+  onSelectMerchant?: (m: Merchant) => void;
+  onOpenAbono?: (m: Merchant) => void;
+  onMarkAsPaid?: (id: string) => void;
+  onOpenAddTicket?: () => void;
 }
 
-export const DebtorsPage: React.FC<Props> = ({
-  allMerchants,
-  stats,
-  loading,
-  search,
-  setSearch,
-  sortBy,
-  setSortBy,
-  counts,
-  onSelectMerchant,
-  onOpenAbono,
-  onMarkAsPaid,
-  onOpenAddTicket,
-}) => {
+export const DebtorsPage: React.FC<Props> = (props) => {
+  // Store fallback
+  const storeMerchants = useMerchantsStore((s) => s.merchants);
+  const storeLoading = useMerchantsStore((s) => s.loading);
+  const storeSearch = useMerchantsStore((s) => s.search);
+  const storeSetSearch = useMerchantsStore((s) => s.setSearch);
+  const storeSortBy = useMerchantsStore((s) => s.sortBy);
+  const storeSetSortBy = useMerchantsStore((s) => s.setSortBy);
+  const storeMarkAsPaid = useMerchantsStore((s) => s.markAsPaid);
+
+  const openDetail = useModalStore((s) => s.openDetail);
+  const openAbono = useModalStore((s) => s.openAbono);
+  const openAddTicket = useModalStore((s) => s.openAddTicket);
+
+  const allMerchants = props.allMerchants ?? storeMerchants;
+  const loading = props.loading ?? storeLoading;
+  const search = props.search ?? storeSearch;
+  const setSearch = props.setSearch ?? storeSetSearch;
+  const sortBy = props.sortBy ?? storeSortBy;
+  const setSortBy = props.setSortBy ?? storeSetSortBy;
+  const onSelectMerchant = props.onSelectMerchant ?? openDetail;
+  const onOpenAbono = props.onOpenAbono ?? openAbono;
+  const onMarkAsPaid = props.onMarkAsPaid ?? storeMarkAsPaid;
+  const onOpenAddTicket = props.onOpenAddTicket ?? (() => openAddTicket(true));
+
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [currencyFilter, setCurrencyFilter] = useState<CurrencyFilter>('all');
 
+  // React 19 useDeferredValue para debounce nativo en la búsqueda
+  const deferredSearch = useDeferredValue(search);
+
+  // Filtrado y ORDENAMIENTO (CORREGIDO: incluye sortMerchants y dependencia sortBy)
   const debtors = useMemo(() => {
-    const query = search.toLowerCase().trim();
-    return allMerchants
+    const query = deferredSearch.toLowerCase().trim();
+    const filtered = allMerchants
       .filter((m) => m.paymentStatus === 'unpaid')
       .filter((m) => currencyFilter === 'all' || (m.currency || 'COP') === currencyFilter)
       .filter((m) => {
@@ -53,7 +71,9 @@ export const DebtorsPage: React.FC<Props> = ({
           m.address.toLowerCase().includes(query)
         );
       });
-  }, [allMerchants, search, currencyFilter]);
+
+    return sortMerchants(filtered, sortBy);
+  }, [allMerchants, deferredSearch, currencyFilter, sortBy]);
 
   const totalDebtCOP = useMemo(() => {
     return debtors
@@ -66,6 +86,11 @@ export const DebtorsPage: React.FC<Props> = ({
       .filter((m) => m.currency === 'USD')
       .reduce((sum, m) => sum + (m.totalFee - m.amountPaid), 0);
   }, [debtors]);
+
+  const derivedCounts = useMemo(() => {
+    if (props.counts) return props.counts;
+    return calculateMerchantCounts(allMerchants);
+  }, [props.counts, allMerchants]);
 
   return (
     <div className="space-y-5">
@@ -132,7 +157,7 @@ export const DebtorsPage: React.FC<Props> = ({
         onSearchChange={setSearch}
         sortBy={sortBy}
         onSortChange={setSortBy}
-        counts={counts}
+        counts={derivedCounts}
         onOpenAddTicket={onOpenAddTicket}
         showStatusFilters={false}
       />
@@ -150,7 +175,7 @@ export const DebtorsPage: React.FC<Props> = ({
         isOpen={isExportOpen}
         onClose={() => setIsExportOpen(false)}
         merchants={debtors}
-        stats={stats}
+        stats={props.stats ?? null}
         title="Exportar Lista de Deudores"
         defaultFileName="deudores-patrocinios-cine"
       />

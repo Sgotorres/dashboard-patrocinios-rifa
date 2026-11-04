@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { raffleRepository } from '../../core/di/container';
+import { DEFAULT_RAFFLE_STATS } from '../../data/repositories/LocalRaffleRepo';
 import type { RaffleStats, UpdateRaffleStatsDTO } from '../../domain/models/RaffleStats';
 
 export function useTicketStats() {
@@ -9,26 +10,58 @@ export function useTicketStats() {
   const fetchStats = useCallback(async () => {
     try {
       const data = await raffleRepository.getStats();
-      setStats(data);
+      setStats(data || DEFAULT_RAFFLE_STATS);
+    } catch (err) {
+      console.warn('No se pudo obtener la configuración de la rifa, usando valores por defecto:', err);
+      setStats(DEFAULT_RAFFLE_STATS);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+    let isMounted = true;
+
+    raffleRepository
+      .getStats()
+      .then((data) => {
+        if (isMounted) {
+          setStats(data || DEFAULT_RAFFLE_STATS);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.warn('No se pudo obtener la configuración de la rifa, usando valores por defecto:', err);
+        if (isMounted) {
+          setStats(DEFAULT_RAFFLE_STATS);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const adjustSold = async (delta: number) => {
     if (!stats) return;
-    const updated = await raffleRepository.adjustTicketsSold(delta);
-    setStats(updated);
+    try {
+      const updated = await raffleRepository.adjustTicketsSold(delta);
+      setStats(updated);
+    } catch (err) {
+      console.warn('Error al ajustar boletos vendidos:', err);
+    }
   };
 
   const updateCampaign = async (dto: UpdateRaffleStatsDTO) => {
-    const updated = await raffleRepository.updateStats(dto);
-    setStats(updated);
-    return updated;
+    try {
+      const updated = await raffleRepository.updateStats(dto);
+      setStats(updated);
+      return updated;
+    } catch (err) {
+      console.warn('Error al actualizar campaña:', err);
+      throw err;
+    }
   };
 
   const percentage = stats && stats.totalTickets > 0

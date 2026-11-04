@@ -1,23 +1,44 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { Menu, Plus, ShieldCheck } from 'lucide-react';
 import { ThemeToggle } from '../common/ThemeToggle';
 import type { ActiveTab } from './Sidebar';
+import { useTicketStats } from '../../hooks/useTicketStats';
+import { useModalStore } from '../../stores/useModalStore';
 
 interface Props {
-  activeTab: ActiveTab;
+  activeTab?: ActiveTab;
   onOpenMobileSidebar: () => void;
-  onOpenAddTicket: () => void;
-  onOpenBackup: () => void;
-  campaignName: string;
+  onOpenAddTicket?: () => void;
+  onOpenBackup?: () => void;
+  campaignName?: string;
 }
 
 export const Header: React.FC<Props> = ({
-  activeTab,
+  activeTab: propActiveTab,
   onOpenMobileSidebar,
   onOpenAddTicket,
   onOpenBackup,
-  campaignName,
+  campaignName: propCampaignName,
 }) => {
+  const location = useLocation();
+  const { stats } = useTicketStats();
+  const openAddTicket = useModalStore((s) => s.openAddTicket);
+  const openBackup = useModalStore((s) => s.openBackup);
+
+  const resolvedAddTicket = onOpenAddTicket ?? (() => openAddTicket(true));
+  const resolvedBackup = onOpenBackup ?? (() => openBackup(true));
+  const campaignName = propCampaignName ?? stats?.campaignName ?? 'Publicidad de Cine & Sorteo a la Playa';
+
+  const getTabFromPath = (pathname: string): ActiveTab => {
+    if (pathname === '/patrocinadores') return 'all-merchants';
+    if (pathname === '/deudores') return 'debtors';
+    if (pathname === '/abonos') return 'abonos';
+    return 'dashboard';
+  };
+
+  const activeTab = propActiveTab ?? getTabFromPath(location.pathname);
+
   const titles: Record<ActiveTab, { title: string; subtitle: string }> = {
     dashboard: {
       title: 'Panel General de Rifa',
@@ -37,7 +58,7 @@ export const Header: React.FC<Props> = ({
     },
   };
 
-  const { title, subtitle } = titles[activeTab];
+  const { title, subtitle } = titles[activeTab] || titles.dashboard;
 
   return (
     <header className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3">
@@ -63,7 +84,7 @@ export const Header: React.FC<Props> = ({
       <div className="flex items-center gap-2">
         <button
           type="button"
-          onClick={onOpenBackup}
+          onClick={resolvedBackup}
           className="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
           title="Copia de seguridad y restauración de datos"
         >
@@ -74,7 +95,7 @@ export const Header: React.FC<Props> = ({
         <ThemeToggle className="hidden sm:flex" />
 
         <button
-          onClick={onOpenAddTicket}
+          onClick={resolvedAddTicket}
           className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 cursor-pointer transition-all active:scale-95 whitespace-nowrap"
         >
           <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

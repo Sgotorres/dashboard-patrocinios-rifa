@@ -1,15 +1,34 @@
-import { db, ensureSeedData } from '../../core/config/dbClient';
+import { db } from '../../core/config/dbClient';
 import type { RaffleStats, UpdateRaffleStatsDTO } from '../../domain/models/RaffleStats';
 import type { IRaffleRepository } from '../../domain/repositories/IRaffleRepository';
 
-const CAMPAIGN_ID = 'main-campaign';
+export const CAMPAIGN_ID = 'main-campaign';
+
+export const DEFAULT_RAFFLE_STATS: RaffleStats = {
+  id: CAMPAIGN_ID,
+  campaignName: 'Publicidad de Cine & Sorteo a la Playa 2026',
+  totalTickets: 1000,
+  ticketsSold: 0,
+  ticketPrice: 50000,
+  ticketPriceCOP: 50000,
+  ticketPriceUSD: 10,
+  targetRevenue: 50000000,
+};
 
 export class LocalRaffleRepo implements IRaffleRepository {
   async getStats(): Promise<RaffleStats> {
-    await ensureSeedData();
-    const stats = await db.raffleStats.get(CAMPAIGN_ID);
-    if (!stats) throw new Error('Configuración de rifa no encontrada');
-    return stats;
+    try {
+      const stats = await db.raffleStats.get(CAMPAIGN_ID);
+      if (stats) return stats;
+
+      // Auto-reparación transparente: si no existe registro inicial en IndexedDB,
+      // guardamos los valores por defecto y los retornamos sin romper la UI.
+      await db.raffleStats.put(DEFAULT_RAFFLE_STATS);
+      return DEFAULT_RAFFLE_STATS;
+    } catch (err) {
+      console.warn('Advertencia al consultar raffleStats en IndexedDB, usando valores por defecto:', err);
+      return DEFAULT_RAFFLE_STATS;
+    }
   }
 
   async updateStats(dto: UpdateRaffleStatsDTO): Promise<RaffleStats> {
@@ -26,6 +45,8 @@ export class LocalRaffleRepo implements IRaffleRepository {
       totalTickets,
       ticketsSold: Math.min(ticketsSold, totalTickets),
       ticketPrice,
+      ticketPriceCOP: dto.ticketPriceCOP ?? current.ticketPriceCOP ?? 50000,
+      ticketPriceUSD: dto.ticketPriceUSD ?? current.ticketPriceUSD ?? 10,
       targetRevenue,
     };
 

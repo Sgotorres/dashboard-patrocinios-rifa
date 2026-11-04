@@ -1,48 +1,66 @@
-import React, { useMemo, useState } from 'react';
+import React, { useDeferredValue, useMemo, useState } from 'react';
 import { TableFilterBar } from '../components/tables/TableFilterBar';
 import { MerchantsDataTable } from '../components/tables/MerchantsDataTable';
 import { ExcelExportModal } from '../components/common/ExcelExportModal';
 import type { Merchant } from '../../domain/models/Merchant';
 import type { RaffleStats } from '../../domain/models/RaffleStats';
-import type { CurrencyFilter, SortOption } from '../hooks/useMerchants';
+import { sortMerchants, type SortOption } from '../../core/utils/merchantSorter';
+import type { CurrencyFilter } from '../hooks/useMerchants';
 import { Clock, DollarSign, FileSpreadsheet } from 'lucide-react';
 import { formatMoney } from '../../core/utils/currencyFormatter';
+import { calculateMerchantCounts, useMerchantsStore } from '../stores/useMerchantsStore';
+import { useModalStore } from '../stores/useModalStore';
 
 interface Props {
-  allMerchants: Merchant[];
-  stats: RaffleStats | null;
-  loading: boolean;
-  search: string;
-  setSearch: (s: string) => void;
-  sortBy: SortOption;
-  setSortBy: (s: SortOption) => void;
-  counts: { all: number; paid: number; pending: number; unpaid: number; cop?: number; usd?: number };
-  onSelectMerchant: (m: Merchant) => void;
-  onOpenAbono: (m: Merchant) => void;
-  onMarkAsPaid: (id: string) => void;
-  onOpenAddTicket: () => void;
+  allMerchants?: Merchant[];
+  stats?: RaffleStats | null;
+  loading?: boolean;
+  search?: string;
+  setSearch?: (s: string) => void;
+  sortBy?: SortOption;
+  setSortBy?: (s: SortOption) => void;
+  counts?: { all: number; paid: number; pending: number; unpaid: number; cop?: number; usd?: number };
+  onSelectMerchant?: (m: Merchant) => void;
+  onOpenAbono?: (m: Merchant) => void;
+  onMarkAsPaid?: (id: string) => void;
+  onOpenAddTicket?: () => void;
 }
 
-export const AbonosPage: React.FC<Props> = ({
-  allMerchants,
-  stats,
-  loading,
-  search,
-  setSearch,
-  sortBy,
-  setSortBy,
-  counts,
-  onSelectMerchant,
-  onOpenAbono,
-  onMarkAsPaid,
-  onOpenAddTicket,
-}) => {
+export const AbonosPage: React.FC<Props> = (props) => {
+  // Store fallback
+  const storeMerchants = useMerchantsStore((s) => s.merchants);
+  const storeLoading = useMerchantsStore((s) => s.loading);
+  const storeSearch = useMerchantsStore((s) => s.search);
+  const storeSetSearch = useMerchantsStore((s) => s.setSearch);
+  const storeSortBy = useMerchantsStore((s) => s.sortBy);
+  const storeSetSortBy = useMerchantsStore((s) => s.setSortBy);
+  const storeMarkAsPaid = useMerchantsStore((s) => s.markAsPaid);
+
+  const openDetail = useModalStore((s) => s.openDetail);
+  const openAbono = useModalStore((s) => s.openAbono);
+  const openAddTicket = useModalStore((s) => s.openAddTicket);
+
+  const allMerchants = props.allMerchants ?? storeMerchants;
+  const loading = props.loading ?? storeLoading;
+  const search = props.search ?? storeSearch;
+  const setSearch = props.setSearch ?? storeSetSearch;
+  const sortBy = props.sortBy ?? storeSortBy;
+  const setSortBy = props.setSortBy ?? storeSetSortBy;
+  const onSelectMerchant = props.onSelectMerchant ?? openDetail;
+  const onOpenAbono = props.onOpenAbono ?? openAbono;
+  const onMarkAsPaid = props.onMarkAsPaid ?? storeMarkAsPaid;
+  const onOpenAddTicket = props.onOpenAddTicket ?? (() => openAddTicket(true));
+
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [currencyFilter, setCurrencyFilter] = useState<CurrencyFilter>('all');
 
+  // React 19 useDeferredValue para evitar congelamientos en búsquedas
+  const deferredSearch = useDeferredValue(search);
+
+  // Filtrado y ORDENAMIENTO (CORREGIDO: incluye sortMerchants y dependencia sortBy)
   const abonosMerchants = useMemo(() => {
-    const query = search.toLowerCase().trim();
-    return allMerchants
+    const query = deferredSearch.toLowerCase().trim();
+    const filtered = allMerchants
       .filter((m) => m.paymentStatus === 'pending')
       .filter((m) => currencyFilter === 'all' || (m.currency || 'COP') === currencyFilter)
       .filter((m) => {
@@ -53,7 +71,9 @@ export const AbonosPage: React.FC<Props> = ({
           m.address.toLowerCase().includes(query)
         );
       });
-  }, [allMerchants, search, currencyFilter]);
+
+    return sortMerchants(filtered, sortBy);
+  }, [allMerchants, deferredSearch, currencyFilter, sortBy]);
 
   const totalAbonadoCOP = useMemo(() => {
     return abonosMerchants
@@ -79,6 +99,11 @@ export const AbonosPage: React.FC<Props> = ({
       .reduce((sum, m) => sum + (m.totalFee - m.amountPaid), 0);
   }, [abonosMerchants]);
 
+  const derivedCounts = useMemo(() => {
+    if (props.counts) return props.counts;
+    return calculateMerchantCounts(allMerchants);
+  }, [props.counts, allMerchants]);
+
   return (
     <div className="space-y-5">
       {/* Yellow / Amber Highlight Header */}
@@ -102,24 +127,42 @@ export const AbonosPage: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Cajas Bimoneda de Abonos */}
+        {/* Cajas de Métricas Bimoneda */}
         <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
-          <div className="bg-white dark:bg-slate-900/90 border border-amber-300 dark:border-amber-800 p-2.5 rounded-xl flex items-center gap-2 shadow-xs">
-            <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <div>
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Abonado (COP / USD)</span>
-              <div className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400">
-                {formatMoney(totalAbonadoCOP, 'COP', true)} • {formatMoney(totalAbonadoUSD, 'USD', true)}
+          {/* COP Box */}
+          <div className="bg-white dark:bg-slate-900/90 border border-amber-300 dark:border-amber-800 p-2.5 rounded-xl flex items-center gap-2.5 shadow-xs">
+            <DollarSign className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+            <div className="flex flex-col">
+              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 leading-tight">
+                COP Abonado / Por Cobrar
+              </span>
+              <div className="flex items-center gap-1.5 text-xs sm:text-sm font-black">
+                <span className="text-amber-600 dark:text-amber-400">
+                  {formatMoney(totalAbonadoCOP, 'COP', true)}
+                </span>
+                <span className="text-slate-400">/</span>
+                <span className="text-rose-600 dark:text-rose-400">
+                  {formatMoney(totalRestanteCOP, 'COP', true)}
+                </span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900/90 border border-amber-300 dark:border-amber-800 p-2.5 rounded-xl flex items-center gap-2 shadow-xs">
-            <DollarSign className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-            <div>
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Por Cobrar (COP / USD)</span>
-              <div className="text-xs sm:text-sm font-black text-amber-600 dark:text-amber-400">
-                {formatMoney(totalRestanteCOP, 'COP', true)} • {formatMoney(totalRestanteUSD, 'USD', true)}
+          {/* USD Box */}
+          <div className="bg-white dark:bg-slate-900/90 border border-amber-300 dark:border-amber-800 p-2.5 rounded-xl flex items-center gap-2.5 shadow-xs">
+            <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div className="flex flex-col">
+              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 leading-tight">
+                USD Abonado / Por Cobrar
+              </span>
+              <div className="flex items-center gap-1.5 text-xs sm:text-sm font-black">
+                <span className="text-amber-600 dark:text-amber-400">
+                  {formatMoney(totalAbonadoUSD, 'USD', true)}
+                </span>
+                <span className="text-slate-400">/</span>
+                <span className="text-rose-600 dark:text-rose-400">
+                  {formatMoney(totalRestanteUSD, 'USD', true)}
+                </span>
               </div>
             </div>
           </div>
@@ -144,7 +187,7 @@ export const AbonosPage: React.FC<Props> = ({
         onSearchChange={setSearch}
         sortBy={sortBy}
         onSortChange={setSortBy}
-        counts={counts}
+        counts={derivedCounts}
         onOpenAddTicket={onOpenAddTicket}
         showStatusFilters={false}
       />
@@ -162,8 +205,8 @@ export const AbonosPage: React.FC<Props> = ({
         isOpen={isExportOpen}
         onClose={() => setIsExportOpen(false)}
         merchants={abonosMerchants}
-        stats={stats}
-        title="Exportar Reporte de Abonos"
+        stats={props.stats ?? null}
+        title="Exportar Lista de Abonos"
         defaultFileName="abonos-patrocinios-cine"
       />
     </div>

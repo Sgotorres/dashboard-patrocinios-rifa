@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Store,
@@ -10,34 +11,64 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { ThemeToggle } from '../common/ThemeToggle';
+import { calculateMerchantCounts, useMerchantsStore } from '../../stores/useMerchantsStore';
+import { useModalStore } from '../../stores/useModalStore';
 
 export type ActiveTab = 'dashboard' | 'all-merchants' | 'debtors' | 'abonos';
 
 interface Props {
-  activeTab: ActiveTab;
-  onSelectTab: (tab: ActiveTab) => void;
-  counts: { all: number; paid: number; pending: number; unpaid: number };
+  activeTab?: ActiveTab;
+  onSelectTab?: (tab: ActiveTab) => void;
+  counts?: { all: number; paid: number; pending: number; unpaid: number };
   isOpenMobile: boolean;
   onCloseMobile: () => void;
-  onOpenAddTicket: () => void;
+  onOpenAddTicket?: () => void;
 }
 
 export const Sidebar: React.FC<Props> = ({
-  activeTab,
+  activeTab: propActiveTab,
   onSelectTab,
-  counts,
+  counts: propCounts,
   isOpenMobile,
   onCloseMobile,
   onOpenAddTicket,
 }) => {
-  const navItems: { id: ActiveTab; label: string; icon: React.ElementType; badge?: number; badgeColor?: string }[] = [
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const storeMerchants = useMerchantsStore((s) => s.merchants);
+  const openAddTicket = useModalStore((s) => s.openAddTicket);
+
+  const resolvedAddTicket = onOpenAddTicket ?? (() => openAddTicket(true));
+  const counts = propCounts ?? calculateMerchantCounts(storeMerchants);
+
+  // Determinar pestaña activa según pathname si no se pasó por props
+  const getTabFromPath = (pathname: string): ActiveTab => {
+    if (pathname === '/patrocinadores') return 'all-merchants';
+    if (pathname === '/deudores') return 'debtors';
+    if (pathname === '/abonos') return 'abonos';
+    return 'dashboard';
+  };
+
+  const activeTab = propActiveTab ?? getTabFromPath(location.pathname);
+
+  const navItems: {
+    id: ActiveTab;
+    path: string;
+    label: string;
+    icon: React.ElementType;
+    badge?: number;
+    badgeColor?: string;
+  }[] = [
     {
       id: 'dashboard',
+      path: '/',
       label: 'Dashboard General',
       icon: LayoutDashboard,
     },
     {
       id: 'all-merchants',
+      path: '/patrocinadores',
       label: 'Comercios Totales',
       icon: Store,
       badge: counts.all,
@@ -45,6 +76,7 @@ export const Sidebar: React.FC<Props> = ({
     },
     {
       id: 'debtors',
+      path: '/deudores',
       label: 'Tabla de Deudores',
       icon: AlertTriangle,
       badge: counts.unpaid,
@@ -52,6 +84,7 @@ export const Sidebar: React.FC<Props> = ({
     },
     {
       id: 'abonos',
+      path: '/abonos',
       label: 'Tabla de Abonos',
       icon: Clock,
       badge: counts.pending,
@@ -59,8 +92,11 @@ export const Sidebar: React.FC<Props> = ({
     },
   ];
 
-  const handleNavClick = (tab: ActiveTab) => {
-    onSelectTab(tab);
+  const handleNavClick = (item: (typeof navItems)[number]) => {
+    if (onSelectTab) {
+      onSelectTab(item.id);
+    }
+    navigate(item.path);
     onCloseMobile();
   };
 
@@ -109,7 +145,7 @@ export const Sidebar: React.FC<Props> = ({
           <div className="pt-4 pb-2">
             <button
               onClick={() => {
-                onOpenAddTicket();
+                resolvedAddTicket();
                 onCloseMobile();
               }}
               className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 cursor-pointer transition-all active:scale-[0.98]"
@@ -131,7 +167,7 @@ export const Sidebar: React.FC<Props> = ({
               return (
                 <button
                   key={item.id}
-                  onClick={() => handleNavClick(item.id)}
+                  onClick={() => handleNavClick(item)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     isActive
                       ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/60 shadow-xs'

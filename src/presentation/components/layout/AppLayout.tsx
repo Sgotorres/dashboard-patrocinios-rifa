@@ -3,12 +3,12 @@ import { Sidebar, type ActiveTab } from './Sidebar';
 import { Header } from './Header';
 
 interface Props {
-  activeTab: ActiveTab;
-  onSelectTab: (tab: ActiveTab) => void;
-  counts: { all: number; paid: number; pending: number; unpaid: number };
-  campaignName: string;
-  onOpenAddTicket: () => void;
-  onOpenBackup: () => void;
+  activeTab?: ActiveTab;
+  onSelectTab?: (tab: ActiveTab) => void;
+  counts?: { all: number; paid: number; pending: number; unpaid: number };
+  campaignName?: string;
+  onOpenAddTicket?: () => void;
+  onOpenBackup?: () => void;
   children: React.ReactNode;
 }
 

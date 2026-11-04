@@ -9,4 +9,5 @@ export interface IMerchantRepository {
   addPayment(id: string, amount: number, note?: string): Promise<Merchant>;
   addTickets(id: string, ticketsDelta: number): Promise<Merchant>;
   delete(id: string): Promise<void>;
+  deleteAll(): Promise<void>;
 }

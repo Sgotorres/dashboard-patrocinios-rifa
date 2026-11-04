@@ -1,29 +1,25 @@
-import { db, ensureSeedData } from '../../core/config/dbClient';
+import { db } from '../../core/config/dbClient';
 import { MerchantEntity } from '../../domain/entities/MerchantEntity';
 import type { CreateMerchantDTO, Merchant, UpdateMerchantDTO } from '../../domain/models/Merchant';
 import type { IMerchantRepository } from '../../domain/repositories/IMerchantRepository';
 
 export class LocalMerchantRepo implements IMerchantRepository {
   async getAll(): Promise<Merchant[]> {
-    await ensureSeedData();
     const list = await db.merchants.toArray();
     return list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
   async getById(id: string): Promise<Merchant | undefined> {
-    await ensureSeedData();
     return db.merchants.get(id);
   }
 
   async create(data: CreateMerchantDTO): Promise<Merchant> {
-    await ensureSeedData();
     const newMerchant = MerchantEntity.create(data);
     await db.merchants.add(newMerchant);
     return newMerchant;
   }
 
   async update(id: string, data: UpdateMerchantDTO): Promise<Merchant> {
-    await ensureSeedData();
     const current = await db.merchants.get(id);
     if (!current) throw new Error('Comercio no encontrado');
 
@@ -85,5 +81,9 @@ export class LocalMerchantRepo implements IMerchantRepository {
 
   async delete(id: string): Promise<void> {
     await db.merchants.delete(id);
+  }
+
+  async deleteAll(): Promise<void> {
+    await db.merchants.clear();
   }
 }

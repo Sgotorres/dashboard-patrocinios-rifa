@@ -1,15 +1,25 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useDeferredValue } from 'react';
 import {
-  merchantRepository,
-  raffleRepository,
+  addTicketsUseCase,
+  deleteMerchantUseCase,
+  getAllMerchantsUseCase,
+  markAsPaidUseCase,
   registerMerchantUseCase,
   registerPaymentUseCase,
+  updateMerchantUseCase,
 } from '../../core/di/container';
-import type { CreateMerchantDTO, CurrencyCode, Merchant, PaymentStatus, UpdateMerchantDTO } from '../../domain/models/Merchant';
+import { sortMerchants, type SortOption } from '../../core/utils/merchantSorter';
+import type {
+  CreateMerchantDTO,
+  CurrencyCode,
+  Merchant,
+  PaymentStatus,
+  UpdateMerchantDTO,
+} from '../../domain/models/Merchant';
 
+export type { SortOption };
 export type FilterStatus = 'all' | PaymentStatus;
 export type CurrencyFilter = 'all' | CurrencyCode;
-export type SortOption = 'recent' | 'name' | 'debt-desc' | 'paid-desc' | 'tickets-desc';
 
 export interface CurrencyFinances {
   totalInvoiced: number;
@@ -32,12 +42,13 @@ export function useMerchants(options?: UseMerchantsOptions) {
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [todayStr] = useState(() => new Date().toISOString().slice(0, 10));
 
+  // React 19 useDeferredValue para evitar jank en búsqueda de texto
+  const deferredSearch = useDeferredValue(search);
+
   const loadMerchants = useCallback(async () => {
     try {
-      const data = await merchantRepository.getAll();
+      const data = await getAllMerchantsUseCase.execute();
       setMerchants(data);
-      const sumTickets = data.reduce((acc, m) => acc + m.ticketsCount, 0);
-      await raffleRepository.recalculateSoldFromMerchants(sumTickets);
       if (onTicketsChanged) await onTicketsChanged();
     } finally {
       setLoading(false);
@@ -56,21 +67,14 @@ export function useMerchants(options?: UseMerchantsOptions) {
   };
 
   const updateMerchant = async (id: string, dto: UpdateMerchantDTO) => {
-    const current = merchants.find((m) => m.id === id);
-    const updated = await merchantRepository.update(id, dto);
+    const updated = await updateMerchantUseCase.execute(id, dto);
     setMerchants((prev) => prev.map((m) => (m.id === id ? updated : m)));
-    if (current && dto.ticketsCount !== undefined) {
-      const diff = updated.ticketsCount - current.ticketsCount;
-      if (diff !== 0) {
-        await raffleRepository.adjustTicketsSold(diff);
-        if (onTicketsChanged) await onTicketsChanged();
-      }
-    }
+    if (onTicketsChanged) await onTicketsChanged();
     return updated;
   };
 
   const markAsPaid = async (id: string) => {
-    const updated = await merchantRepository.markAsPaid(id);
+    const updated = await markAsPaidUseCase.execute(id);
     setMerchants((prev) => prev.map((m) => (m.id === id ? updated : m)));
     return updated;
   };
@@ -82,21 +86,16 @@ export function useMerchants(options?: UseMerchantsOptions) {
   };
 
   const addTickets = async (id: string, ticketsDelta: number) => {
-    const updated = await merchantRepository.addTickets(id, ticketsDelta);
+    const updated = await addTicketsUseCase.execute(id, ticketsDelta);
     setMerchants((prev) => prev.map((m) => (m.id === id ? updated : m)));
-    await raffleRepository.adjustTicketsSold(ticketsDelta);
     if (onTicketsChanged) await onTicketsChanged();
     return updated;
   };
 
   const deleteMerchant = async (id: string) => {
-    const target = merchants.find((m) => m.id === id);
-    await merchantRepository.delete(id);
+    await deleteMerchantUseCase.execute(id);
     setMerchants((prev) => prev.filter((m) => m.id !== id));
-    if (target) {
-      await raffleRepository.adjustTicketsSold(-target.ticketsCount);
-      if (onTicketsChanged) await onTicketsChanged();
-    }
+    if (onTicketsChanged) await onTicketsChanged();
   };
 
   const counts = useMemo(() => {
@@ -108,7 +107,7 @@ export function useMerchants(options?: UseMerchantsOptions) {
         else acc.cop += 1;
         return acc;
       },
-      { all: 0, paid: 0, pending: 0, unpaid: 0, cop: 0, usd: 0 }
+      { all: 0, paid: 0, pending: 0, unpaid: 0, cop: 0, usd: 0 },
     );
   }, [merchants]);
 
@@ -157,8 +156,8 @@ export function useMerchants(options?: UseMerchantsOptions) {
   }, [merchants, todayStr]);
 
   const filteredMerchants = useMemo(() => {
-    const query = search.toLowerCase().trim();
-    let result = merchants.filter((m) => {
+    const query = deferredSearch.toLowerCase().trim();
+    const filtered = merchants.filter((m) => {
       const matchesFilter = filter === 'all' || m.paymentStatus === filter;
       const matchesCurrency = currencyFilter === 'all' || (m.currency || 'COP') === currencyFilter;
       const matchesSearch =
@@ -170,20 +169,8 @@ export function useMerchants(options?: UseMerchantsOptions) {
       return matchesFilter && matchesCurrency && matchesSearch;
     });
 
-    result = [...result].sort((a, b) => {
-      if (sortBy === 'name') return a.name.localeCompare(b.name);
-      if (sortBy === 'debt-desc') {
-        const debtA = Math.max(0, a.totalFee - a.amountPaid);
-        const debtB = Math.max(0, b.totalFee - b.amountPaid);
-        return debtB - debtA;
-      }
-      if (sortBy === 'paid-desc') return b.amountPaid - a.amountPaid;
-      if (sortBy === 'tickets-desc') return b.ticketsCount - a.ticketsCount;
-      return b.createdAt.localeCompare(a.createdAt);
-    });
-
-    return result;
-  }, [merchants, filter, currencyFilter, search, sortBy]);
+    return sortMerchants(filtered, sortBy);
+  }, [merchants, filter, currencyFilter, deferredSearch, sortBy]);
 
   return {
     merchants: filteredMerchants,

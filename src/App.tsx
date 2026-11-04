@@ -1,13 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { ThemeProvider } from './core/context/ThemeContext';
 import { AppLayout } from './presentation/components/layout/AppLayout';
-import type { ActiveTab } from './presentation/components/layout/Sidebar';
-import { useMerchants } from './presentation/hooks/useMerchants';
 import { useTicketStats } from './presentation/hooks/useTicketStats';
+import { useMerchantsStore } from './presentation/stores/useMerchantsStore';
+import { useModalStore } from './presentation/stores/useModalStore';
+
+// Vistas
 import { DashboardOverviewPage } from './presentation/pages/DashboardOverviewPage';
 import { AllMerchantsPage } from './presentation/pages/AllMerchantsPage';
 import { DebtorsPage } from './presentation/pages/DebtorsPage';
 import { AbonosPage } from './presentation/pages/AbonosPage';
+
+// Modales globales
 import { AddTicketModal } from './presentation/components/merchants/AddTicketModal';
 import { MerchantDetailModal } from './presentation/components/merchants/MerchantDetailModal';
 import { QuickAbonoModal } from './presentation/components/merchants/QuickAbonoModal';
@@ -15,189 +21,112 @@ import { MerchantFormModal } from './presentation/components/merchants/MerchantF
 import { CampaignConfigModal } from './presentation/components/dashboard/CampaignConfigModal';
 import { BackupModal } from './presentation/components/common/BackupModal';
 import { QuickSearchModal } from './presentation/components/common/QuickSearchModal';
-import type { Merchant } from './domain/models/Merchant';
+import { ErrorBoundary } from './presentation/components/common/ErrorBoundary';
 
 function DashboardApp() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
-
   const {
     stats,
-    percentage,
-    remainingTickets,
     updateCampaign,
     refresh: refreshStats,
   } = useTicketStats();
 
-  const {
-    merchants,
-    allMerchants,
-    loading: loadingMerchants,
-    filter,
-    setFilter,
-    currencyFilter,
-    setCurrencyFilter,
-    search,
-    setSearch,
-    sortBy,
-    setSortBy,
-    counts,
-    finances,
-    todayCashbox,
-    createMerchant,
-    updateMerchant,
-    markAsPaid,
-    addPayment,
-    addTickets,
-    deleteMerchant,
-    refresh: refreshMerchants,
-  } = useMerchants({ onTicketsChanged: refreshStats });
+  const merchants = useMerchantsStore((s) => s.merchants);
+  const loadMerchants = useMerchantsStore((s) => s.loadMerchants);
+  const createMerchant = useMerchantsStore((s) => s.createMerchant);
+  const updateMerchant = useMerchantsStore((s) => s.updateMerchant);
+  const markAsPaid = useMerchantsStore((s) => s.markAsPaid);
+  const addPayment = useMerchantsStore((s) => s.addPayment);
+  const addTickets = useMerchantsStore((s) => s.addTickets);
+  const deleteMerchant = useMerchantsStore((s) => s.deleteMerchant);
 
-  // Modals state
-  const [isAddTicketOpen, setIsAddTicketOpen] = useState(false);
-  const [isConfigOpen, setIsConfigOpen] = useState(false);
-  const [isBackupOpen, setIsBackupOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [detailMerchant, setDetailMerchant] = useState<Merchant | null>(null);
-  const [editMerchant, setEditMerchant] = useState<Merchant | null>(null);
-  const [abonoMerchant, setAbonoMerchant] = useState<Merchant | null>(null);
+  // Modal store state
+  const isAddTicketOpen = useModalStore((s) => s.isAddTicketOpen);
+  const isConfigOpen = useModalStore((s) => s.isConfigOpen);
+  const isBackupOpen = useModalStore((s) => s.isBackupOpen);
+  const isSearchOpen = useModalStore((s) => s.isSearchOpen);
+  const detailMerchant = useModalStore((s) => s.detailMerchant);
+  const editMerchant = useModalStore((s) => s.editMerchant);
+  const abonoMerchant = useModalStore((s) => s.abonoMerchant);
+
+  const openAddTicket = useModalStore((s) => s.openAddTicket);
+  const openConfig = useModalStore((s) => s.openConfig);
+  const openBackup = useModalStore((s) => s.openBackup);
+  const openSearch = useModalStore((s) => s.openSearch);
+  const openDetail = useModalStore((s) => s.openDetail);
+  const openEdit = useModalStore((s) => s.openEdit);
+  const openAbono = useModalStore((s) => s.openAbono);
+
+  // Carga inicial
+  useEffect(() => {
+    loadMerchants();
+  }, [loadMerchants]);
 
   // Atajo global Ctrl+K / Cmd+K para abrir el buscador rápido
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setIsSearchOpen(true);
+        openSearch(true);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [openSearch]);
 
   // Sincronizar el comercio seleccionado en detalle con el estado más reciente
   const currentDetailMerchant = detailMerchant
-    ? allMerchants.find((m) => m.id === detailMerchant.id) || detailMerchant
+    ? merchants.find((m) => m.id === detailMerchant.id) || detailMerchant
     : null;
 
   return (
-    <AppLayout
-      activeTab={activeTab}
-      onSelectTab={setActiveTab}
-      counts={counts}
-      campaignName={stats?.campaignName || 'Publicidad de Cine & Sorteo a la Playa'}
-      onOpenAddTicket={() => setIsAddTicketOpen(true)}
-      onOpenBackup={() => setIsBackupOpen(true)}
-    >
-      {activeTab === 'dashboard' && (
-        <DashboardOverviewPage
-          stats={stats}
-          percentage={percentage}
-          remainingTickets={remainingTickets}
-          onOpenConfig={() => setIsConfigOpen(true)}
-          onOpenAddTicket={() => setIsAddTicketOpen(true)}
-          finances={finances}
-          todayCashbox={todayCashbox}
-          merchants={merchants}
-          allMerchants={allMerchants}
-          loading={loadingMerchants}
-          filter={filter}
-          setFilter={setFilter}
-          currencyFilter={currencyFilter}
-          setCurrencyFilter={setCurrencyFilter}
-          search={search}
-          setSearch={setSearch}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          counts={counts}
-          onSelectMerchant={setDetailMerchant}
-          onOpenAbono={setAbonoMerchant}
-          onMarkAsPaid={markAsPaid}
-          onGoToSection={setActiveTab}
-        />
-      )}
-
-      {activeTab === 'all-merchants' && (
-        <AllMerchantsPage
-          merchants={merchants}
-          allMerchants={allMerchants}
-          stats={stats}
-          loading={loadingMerchants}
-          filter={filter}
-          setFilter={setFilter}
-          currencyFilter={currencyFilter}
-          setCurrencyFilter={setCurrencyFilter}
-          search={search}
-          setSearch={setSearch}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          counts={counts}
-          onSelectMerchant={setDetailMerchant}
-          onOpenAbono={setAbonoMerchant}
-          onMarkAsPaid={markAsPaid}
-          onOpenAddTicket={() => setIsAddTicketOpen(true)}
-        />
-      )}
-
-      {activeTab === 'debtors' && (
-        <DebtorsPage
-          allMerchants={allMerchants}
-          stats={stats}
-          loading={loadingMerchants}
-          search={search}
-          setSearch={setSearch}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          counts={counts}
-          onSelectMerchant={setDetailMerchant}
-          onOpenAbono={setAbonoMerchant}
-          onMarkAsPaid={markAsPaid}
-          onOpenAddTicket={() => setIsAddTicketOpen(true)}
-        />
-      )}
-
-      {activeTab === 'abonos' && (
-        <AbonosPage
-          allMerchants={allMerchants}
-          stats={stats}
-          loading={loadingMerchants}
-          search={search}
-          setSearch={setSearch}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          counts={counts}
-          onSelectMerchant={setDetailMerchant}
-          onOpenAbono={setAbonoMerchant}
-          onMarkAsPaid={markAsPaid}
-          onOpenAddTicket={() => setIsAddTicketOpen(true)}
-        />
-      )}
+    <AppLayout>
+      <Routes>
+        <Route path="/" element={<DashboardOverviewPage />} />
+        <Route path="/patrocinadores" element={<AllMerchantsPage />} />
+        <Route path="/deudores" element={<DebtorsPage />} />
+        <Route path="/debtors" element={<Navigate to="/deudores" replace />} />
+        <Route path="/abonos" element={<AbonosPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
 
       {/* Add Ticket / Register Merchant Modal */}
       <AddTicketModal
         isOpen={isAddTicketOpen}
-        onClose={() => setIsAddTicketOpen(false)}
+        onClose={() => openAddTicket(false)}
         defaultTicketPrice={stats?.ticketPriceCOP || 50000}
-        existingMerchants={allMerchants}
-        onRegisterNewMerchant={createMerchant}
-        onAddTicketsToExisting={(id, count) => addTickets(id, count)}
+        existingMerchants={merchants}
+        onRegisterNewMerchant={async (dto) => {
+          const res = await createMerchant(dto);
+          await refreshStats();
+          return res;
+        }}
+        onAddTicketsToExisting={async (id, count) => {
+          const res = await addTickets(id, count);
+          await refreshStats();
+          return res;
+        }}
       />
 
       {/* Merchant Detail Modal */}
       <MerchantDetailModal
         merchant={currentDetailMerchant}
         isOpen={Boolean(detailMerchant)}
-        onClose={() => setDetailMerchant(null)}
-        onOpenAbono={setAbonoMerchant}
+        onClose={() => openDetail(null)}
+        onOpenAbono={openAbono}
         onMarkAsPaid={markAsPaid}
-        onEdit={setEditMerchant}
-        onDelete={deleteMerchant}
-        onAddTicket={() => setIsAddTicketOpen(true)}
+        onEdit={openEdit}
+        onDelete={async (id) => {
+          await deleteMerchant(id);
+          await refreshStats();
+        }}
+        onAddTicket={() => openAddTicket(true)}
       />
 
       {/* Quick Abono Modal con Recibo WhatsApp */}
       <QuickAbonoModal
         merchant={abonoMerchant}
         isOpen={Boolean(abonoMerchant)}
-        onClose={() => setAbonoMerchant(null)}
+        onClose={() => openAbono(null)}
         onSubmit={addPayment}
       />
 
@@ -205,16 +134,17 @@ function DashboardApp() {
       <MerchantFormModal
         isOpen={Boolean(editMerchant)}
         initialData={editMerchant}
-        onClose={() => setEditMerchant(null)}
+        onClose={() => openEdit(null)}
         onSubmit={async (id, data) => {
           await updateMerchant(id, data);
+          await refreshStats();
         }}
       />
 
       {/* Campaign Config Modal */}
       <CampaignConfigModal
         isOpen={isConfigOpen}
-        onClose={() => setIsConfigOpen(false)}
+        onClose={() => openConfig(false)}
         stats={stats}
         onSave={updateCampaign}
       />
@@ -222,9 +152,9 @@ function DashboardApp() {
       {/* Backup and Restore Modal */}
       <BackupModal
         isOpen={isBackupOpen}
-        onClose={() => setIsBackupOpen(false)}
+        onClose={() => openBackup(false)}
         onDataRestored={async () => {
-          await refreshMerchants();
+          await loadMerchants();
           await refreshStats();
         }}
       />
@@ -232,10 +162,10 @@ function DashboardApp() {
       {/* Quick Search Spotlight Modal (Ctrl+K) */}
       <QuickSearchModal
         isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        merchants={allMerchants}
-        onSelectMerchant={setDetailMerchant}
-        onOpenAbono={setAbonoMerchant}
+        onClose={() => openSearch(false)}
+        merchants={merchants}
+        onSelectMerchant={openDetail}
+        onOpenAbono={openAbono}
       />
     </AppLayout>
   );
@@ -243,9 +173,14 @@ function DashboardApp() {
 
 export function App() {
   return (
-    <ThemeProvider>
-      <DashboardApp />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <BrowserRouter>
+          <DashboardApp />
+          <Toaster richColors position="top-right" closeButton />
+        </BrowserRouter>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

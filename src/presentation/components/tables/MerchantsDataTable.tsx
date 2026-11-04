@@ -4,10 +4,11 @@ import { LogoAvatar } from '../common/LogoAvatar';
 import { StatusCell } from '../common/StatusCell';
 import {
   MapPin, Phone, MessageCircle, Ticket, DollarSign,
-  CheckCircle, Plus, Store, AtSign
+  CheckCircle, Plus, Store, AtSign, X
 } from 'lucide-react';
 import { cleanSocialHandle } from '../../../core/utils/logoResolver';
 import { formatMoney, getCurrencyBadge } from '../../../core/utils/currencyFormatter';
+import { useMerchantsStore } from '../../stores/useMerchantsStore';
 
 interface Props {
   merchants: Merchant[];
@@ -16,6 +17,7 @@ interface Props {
   onOpenAbono: (merchant: Merchant) => void;
   onMarkAsPaid: (id: string) => void;
   onOpenAddTicket: () => void;
+  onDeleteMerchant?: (id: string, name: string) => void | Promise<void>;
 }
 
 export const MerchantsDataTable: React.FC<Props> = ({
@@ -25,7 +27,23 @@ export const MerchantsDataTable: React.FC<Props> = ({
   onOpenAbono,
   onMarkAsPaid,
   onOpenAddTicket,
+  onDeleteMerchant,
 }) => {
+  const storeDeleteMerchant = useMerchantsStore((s) => s.deleteMerchant);
+
+  const handleDeleteClick = (e: React.MouseEvent, m: Merchant) => {
+    e.stopPropagation();
+    const confirmed = window.confirm(
+      `¿Deseas eliminar a "${m.name}"?\nEsta acción eliminará sus abonos registrados y ajustará los boletos asignados al sorteo.`
+    );
+    if (!confirmed) return;
+
+    if (onDeleteMerchant) {
+      onDeleteMerchant(m.id, m.name);
+    } else {
+      storeDeleteMerchant(m.id);
+    }
+  };
   if (loading) {
     return (
       <div className="py-16 text-center text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
@@ -104,11 +122,20 @@ export const MerchantsDataTable: React.FC<Props> = ({
                   </div>
                 </button>
 
-                <div className="shrink-0">
+                <div className="shrink-0 flex items-center gap-1.5">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 font-extrabold text-[11px] border border-indigo-200 dark:border-indigo-900/60">
                     <Ticket className="w-3 h-3" />
                     <span>{m.ticketsCount}</span>
                   </span>
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteClick(e, m)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-transparent hover:border-rose-200 dark:hover:border-rose-900/60 transition-all cursor-pointer"
+                    title={`Eliminar ${m.name}`}
+                    aria-label={`Eliminar ${m.name}`}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
@@ -329,6 +356,16 @@ export const MerchantsDataTable: React.FC<Props> = ({
                           </button>
                         </>
                       )}
+
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteClick(e, m)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-transparent hover:border-rose-200 dark:hover:border-rose-900/60 transition-all cursor-pointer"
+                        title={`Eliminar comercio: ${m.name}`}
+                        aria-label={`Eliminar ${m.name}`}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>

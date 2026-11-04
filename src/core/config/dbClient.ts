@@ -131,7 +131,10 @@ const initialMerchants: Merchant[] = [
   },
 ];
 
+export const IS_SEEDED_KEY = 'app_db_seeded_v1';
+
 export async function ensureSeedData(): Promise<void> {
+  // 1. Garantizar siempre la configuración de la rifa/campaña
   const existingStats = await db.raffleStats.get('main-campaign');
   if (!existingStats) {
     const totalSoldInitial = initialMerchants.reduce((sum, m) => sum + m.ticketsCount, 0);
@@ -147,8 +150,23 @@ export async function ensureSeedData(): Promise<void> {
     });
   }
 
+  // 2. Si ya se ejecutó la siembra de comercios, respetamos las modificaciones o eliminaciones del usuario
+  if (typeof window !== 'undefined' && localStorage.getItem(IS_SEEDED_KEY)) {
+    return;
+  }
+
   const merchantsCount = await db.merchants.count();
   if (merchantsCount === 0) {
     await db.merchants.bulkAdd(initialMerchants);
+  }
+
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(IS_SEEDED_KEY, 'true');
+  }
+}
+
+export function resetSeedFlag(): void {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(IS_SEEDED_KEY);
   }
 }
