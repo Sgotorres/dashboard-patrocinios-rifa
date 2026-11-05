@@ -106,7 +106,7 @@ const QuickSearchContent: React.FC<ContentProps> = ({
               const remaining = Math.max(0, m.totalFee - m.amountPaid);
               const cleanPhone = m.phone.replace(/[^0-9]/g, '');
               const waMsg = encodeURIComponent(
-                `Hola ${m.name}, te escribimos de la Publicidad en Cine & Sorteo a la Playa para coordinar el saldo pendiente de ${formatMoney(remaining, currency, true)}.`
+                `Hola ${m.name}, te escribimos de la Gestión de Publicidad para coordinar el saldo pendiente de ${formatMoney(remaining, currency, true)}.`
               );
               const waUrl = `https://wa.me/${cleanPhone}?text=${waMsg}`;
               const currBadge = getCurrencyBadge(currency);

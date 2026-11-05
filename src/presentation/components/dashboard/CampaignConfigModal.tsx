@@ -54,7 +54,7 @@ const CampaignConfigForm: React.FC<FormProps> = ({ stats, onClose, onSave }) => 
         <input
           type="text"
           required
-          placeholder="Ej: Publicidad de Cine & Sorteo a la Playa 2026"
+          placeholder="Ej: Campaña Publicitaria 2026"
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
@@ -64,7 +64,7 @@ const CampaignConfigForm: React.FC<FormProps> = ({ stats, onClose, onSave }) => 
       <div>
         <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
           <Target className="w-3.5 h-3.5 text-indigo-500" />
-          <span>Meta Libre de Boletos / Espacios a Vender *</span>
+          <span>Meta de Espacios Publicitarios a Vender *</span>
         </label>
         <input
           type="number"
@@ -77,7 +77,7 @@ const CampaignConfigForm: React.FC<FormProps> = ({ stats, onClose, onSave }) => 
           className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 font-bold focus:outline-none focus:border-indigo-500 text-sm"
         />
         <p className="text-[11px] text-slate-400 mt-1">
-          No hay límite predeterminado. Define libremente la meta de boletos para el sorteo del viaje a la playa.
+          Define libremente la meta de espacios publicitarios para esta actividad comercial.
         </p>
       </div>
 
@@ -85,7 +85,7 @@ const CampaignConfigForm: React.FC<FormProps> = ({ stats, onClose, onSave }) => 
         <div>
           <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
             <span>🇨🇴</span>
-            <span>Precio Base en COP ($)</span>
+            <span>Precio Base por Espacio en COP ($)</span>
           </label>
           <input
             type="number"
@@ -102,7 +102,7 @@ const CampaignConfigForm: React.FC<FormProps> = ({ stats, onClose, onSave }) => 
         <div>
           <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
             <span>💵</span>
-            <span>Precio Base en USD ($)</span>
+            <span>Precio Base por Espacio en USD ($)</span>
           </label>
           <input
             type="number"

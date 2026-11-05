@@ -157,7 +157,7 @@ export const TableFilterBar: React.FC<Props> = ({
             <option value="recent">Más recientes</option>
             <option value="debt-desc">Mayor deuda</option>
             <option value="paid-desc">Mayor abono</option>
-            <option value="tickets-desc">Más boletos</option>
+            <option value="tickets-desc">Más espacios pautados</option>
             <option value="name">Nombre (A-Z)</option>
           </select>
         </div>

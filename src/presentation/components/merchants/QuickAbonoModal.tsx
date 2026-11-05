@@ -59,14 +59,14 @@ export const QuickAbonoModal: React.FC<Props> = ({
   const waReceiptMsg = receipt
     ? encodeURIComponent(
         `¡Hola *${merchant.name}*! 👋\n\n` +
-        `Le confirmamos la recepción de su abono por un valor de *${formatMoney(receipt.amount, currency, true)}* para su publicidad en pantalla de cine y boletos del sorteo para el viaje a la playa.\n\n` +
-        `📊 *Resumen de Cuenta:*\n` +
-        `• Cuota Total: ${formatMoney(receipt.totalFee, currency, true)}\n` +
-        `• Nuevo Saldo Pendiente: ${formatMoney(receipt.remaining, currency, true)}\n` +
+        `Le confirmamos la recepción de su pago/abono por un valor de *${formatMoney(receipt.amount, currency, true)}* correspondiente a su pauta y espacios publicitarios.\n\n` +
+        `📊 *Estado de Cuenta:*\n` +
+        `• Total Contratado: ${formatMoney(receipt.totalFee, currency, true)}\n` +
+        `• Saldo Pendiente: ${formatMoney(receipt.remaining, currency, true)}\n` +
         (receipt.remaining <= 0
-          ? `🎉 *¡Felicidades! Su patrocinio ha quedado completamente solvente.*\n\n`
+          ? `🎉 *¡Excelente! Su pauta publicitaria ha quedado completamente liquidada.*\n\n`
           : `\n`) +
-        `¡Muchas gracias por su valioso apoyo a nuestra actividad de cine!`
+        `¡Muchas gracias por su confianza y apoyo comercial!`
       )
     : '';
   const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waReceiptMsg}` : '';

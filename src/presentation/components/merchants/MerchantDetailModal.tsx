@@ -36,7 +36,7 @@ export const MerchantDetailModal: React.FC<Props> = ({
   const remaining = Math.max(0, merchant.totalFee - merchant.amountPaid);
   const cleanPhone = merchant.phone.replace(/[^0-9]/g, '');
   const waCobroMsg = encodeURIComponent(
-    `Hola ${merchant.name}, te escribimos de la Publicidad en Cine & Sorteo a la Playa para coordinar el saldo pendiente de ${formatMoney(remaining, currency, true)} por sus ${merchant.ticketsCount} boletos de patrocinio.`
+    `Hola ${merchant.name}, te escribimos de la Gestión de Publicidad para coordinar el saldo pendiente de ${formatMoney(remaining, currency, true)} por sus ${merchant.ticketsCount} espacios publicitarios.`
   );
   const waCobroUrl = `https://wa.me/${cleanPhone}?text=${waCobroMsg}`;
   const currBadge = getCurrencyBadge(currency);
@@ -151,7 +151,7 @@ export const MerchantDetailModal: React.FC<Props> = ({
           <div className="p-3 bg-slate-100 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
             <div className="flex items-center justify-center gap-1 text-slate-500 dark:text-slate-400 mb-0.5">
               <Ticket className="w-3.5 h-3.5 text-indigo-500" />
-              <span className="text-[11px]">Boletos Sorteo</span>
+              <span className="text-[11px]">Espacios Pautados</span>
             </div>
             <div className="text-lg font-black text-indigo-600 dark:text-indigo-400">{merchant.ticketsCount}</div>
             <div className="text-[10px] text-slate-400">{formatMoney(merchant.ticketPrice, currency)} c/u</div>
@@ -212,7 +212,7 @@ export const MerchantDetailModal: React.FC<Props> = ({
             className="py-2 px-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold flex items-center gap-1 border border-indigo-200 dark:border-indigo-900 cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>Sumar Boletos</span>
+            <span>+ Añadir Espacios</span>
           </button>
         </div>
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Settings2, ShieldCheck, Palmtree } from 'lucide-react';
+import { Plus, Settings2, ShieldCheck, Megaphone } from 'lucide-react';
 import type { RaffleStats } from '../../../domain/models/RaffleStats';
 
 interface Props {
@@ -32,25 +32,25 @@ export const TicketProgressBar: React.FC<Props> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400">
-            <Palmtree className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" />
+            <Megaphone className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600 dark:text-indigo-400" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">
-                Meta de Boletos: Sorteo Viaje a la Playa
+                Meta de Espacios Publicitarios
               </h2>
               <button
                 type="button"
                 onClick={onOpenConfig}
                 className="p-1 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
-                title="Configurar meta libre de boletos y precios"
+                title="Configurar meta de espacios y precios"
               >
                 <Settings2 className="w-4 h-4" />
               </button>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>{stats?.campaignName || 'Publicidad en Pantalla de Cine & Sorteo a la Playa'}</span>
+              <span>{stats?.campaignName || 'Campaña de Venta de Publicidad'}</span>
             </p>
           </div>
         </div>
@@ -61,13 +61,13 @@ export const TicketProgressBar: React.FC<Props> = ({
             type="button"
             onClick={onOpenAddTicket}
             className="text-left sm:text-right group cursor-pointer p-1.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
-            title="Presiona para registrar o declarar venta de boletos"
+            title="Presiona para registrar venta de espacios publicitarios"
           >
             <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-none group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
               {sold} <span className="text-slate-400 text-base font-semibold">/ {total}</span>
             </div>
             <div className="text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-1">
-              {percentage}% cumplido ({remainingTickets} por colocar)
+              {percentage}% cumplido ({remainingTickets} espacios disponibles)
             </div>
           </button>
 
@@ -77,7 +77,7 @@ export const TicketProgressBar: React.FC<Props> = ({
             className="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-indigo-600/20 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Vender Boletos</span>
+            <span className="hidden sm:inline">+ Vender Espacio</span>
           </button>
         </div>
       </div>
@@ -92,11 +92,11 @@ export const TicketProgressBar: React.FC<Props> = ({
         </div>
 
         <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
-          <span className="font-semibold">0 boletos</span>
+          <span className="font-semibold">0 espacios</span>
           <span className="font-bold text-slate-600 dark:text-slate-300">
-            {sold} boletos entregados a patrocinadores
+            {sold} espacios colocados con anunciantes
           </span>
-          <span className="font-semibold">{total} meta libre</span>
+          <span className="font-semibold">{total} meta total</span>
         </div>
       </div>
     </div>

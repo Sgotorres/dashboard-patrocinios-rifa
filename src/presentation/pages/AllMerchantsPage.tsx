@@ -98,7 +98,7 @@ export const AllMerchantsPage: React.FC<Props> = (props) => {
 
   const handleClearAll = async () => {
     const confirmed = window.confirm(
-      `¿ATENCIÓN: Estás a punto de eliminar TODOS los comercios (${allMerchants.length})?\nEsta acción no se puede deshacer y reiniciará el conteo de boletos asignados.`
+      `¿ATENCIÓN: Estás a punto de eliminar TODOS los anunciantes (${allMerchants.length})?\nEsta acción no se puede deshacer y reiniciará el conteo de espacios asignados.`
     );
     if (!confirmed) return;
     await storeClearAllMerchants();
@@ -113,10 +113,10 @@ export const AllMerchantsPage: React.FC<Props> = (props) => {
           </div>
           <div>
             <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-              Todos los Patrocinadores Registrados
+              Todos los Anunciantes Registrados
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Publicidad en funciones de cine + boletos para el sorteo a la playa
+              Listado completo de clientes y espacios de publicidad pautados
             </p>
           </div>
         </div>
@@ -145,7 +145,7 @@ export const AllMerchantsPage: React.FC<Props> = (props) => {
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 cursor-pointer transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>Añadir Patrocinador</span>
+            <span>+ Nuevo Anunciante</span>
           </button>
         </div>
       </div>

@@ -126,7 +126,7 @@ const MerchantFormContent: React.FC<FormContentProps> = ({ initialData, onClose,
 
       <div className="grid grid-cols-2 gap-3 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
         <div>
-          <label className="block text-slate-600 dark:text-slate-400 mb-1 font-semibold">Cantidad Boletos</label>
+          <label className="block text-slate-600 dark:text-slate-400 mb-1 font-semibold">Cantidad de Espacios</label>
           <input
             type="number"
             min="1"
@@ -136,7 +136,7 @@ const MerchantFormContent: React.FC<FormContentProps> = ({ initialData, onClose,
           />
         </div>
         <div>
-          <label className="block text-slate-600 dark:text-slate-400 mb-1 font-semibold">Precio Unitario ({currency})</label>
+          <label className="block text-slate-600 dark:text-slate-400 mb-1 font-semibold">Precio por Espacio ({currency})</label>
           <input
             type="number"
             min="0"

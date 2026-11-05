@@ -110,7 +110,7 @@ export const DebtorsPage: React.FC<Props> = (props) => {
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Patrocinadores que recibieron boletos pero aún no registran abono inicial
+              Anunciantes con espacios contratados pero que aún no registran abono inicial
             </p>
           </div>
         </div>

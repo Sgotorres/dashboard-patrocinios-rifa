@@ -25,7 +25,7 @@ export const TicketPricingFields: React.FC<Props> = ({
       <div className="flex items-center justify-between text-indigo-700 dark:text-indigo-300 font-bold">
         <div className="flex items-center gap-2">
           <Ticket className="w-4 h-4" />
-          <span>Detalles de Publicidad & Boletos del Sorteo</span>
+          <span>Detalles de Espacios & Paquete Publicitario</span>
         </div>
         <span className="text-[11px] px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/60 font-bold">
           {currency === 'USD' ? '💵 Dólares (USD)' : '🇨🇴 Pesos (COP)'}
@@ -34,7 +34,7 @@ export const TicketPricingFields: React.FC<Props> = ({
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div>
-          <label className="block text-slate-600 dark:text-slate-400 mb-1">Cantidad Boletos</label>
+          <label className="block text-slate-600 dark:text-slate-400 mb-1">Cantidad de Espacios</label>
           <input
             type="number"
             min="1"
@@ -46,7 +46,7 @@ export const TicketPricingFields: React.FC<Props> = ({
         </div>
         <div>
           <label className="block text-slate-600 dark:text-slate-400 mb-1">
-            Precio Unitario ({currency})
+            Precio por Espacio ({currency})
           </label>
           <input
             type="number"

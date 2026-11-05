@@ -4,7 +4,7 @@ import { LogoFetcherInput } from './LogoFetcherInput';
 import { TicketPricingFields } from './TicketPricingFields';
 import { PaymentStatusSelector } from './PaymentStatusSelector';
 import type { CreateMerchantDTO, CurrencyCode, Merchant, PaymentStatus } from '../../../domain/models/Merchant';
-import { Store, PlusCircle } from 'lucide-react';
+import { Store, PlusCircle, ChevronDown, ChevronUp, MapPin, Sparkles } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -34,6 +34,7 @@ export const AddTicketModal: React.FC<Props> = ({
   const [ticketPrice, setTicketPrice] = useState('50000');
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('unpaid');
   const [initialAbono, setInitialAbono] = useState('0');
+  const [showOptionalDetails, setShowOptionalDetails] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const parsedTickets = Math.max(1, parseInt(ticketsCount, 10) || 1);
@@ -65,6 +66,7 @@ export const AddTicketModal: React.FC<Props> = ({
     setTicketPrice(currency === 'COP' ? '50000' : '10');
     setPaymentStatus('unpaid');
     setInitialAbono('0');
+    setShowOptionalDetails(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,8 +103,8 @@ export const AddTicketModal: React.FC<Props> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Añadir Patrocinador & Boletos"
-      subtitle="Publicidad en pantalla antes de las funciones de cine + sorteo a la playa"
+      title="Registrar Venta de Publicidad"
+      subtitle="Alta rápida de anunciante y control de cobranza"
       maxWidth="lg"
     >
       <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl mb-4 text-xs font-semibold">
@@ -116,7 +118,7 @@ export const AddTicketModal: React.FC<Props> = ({
           }`}
         >
           <PlusCircle className="w-3.5 h-3.5" />
-          <span>Registrar Nuevo Patrocinador</span>
+          <span>Nuevo Anunciante</span>
         </button>
         <button
           type="button"
@@ -129,7 +131,7 @@ export const AddTicketModal: React.FC<Props> = ({
           }`}
         >
           <Store className="w-3.5 h-3.5" />
-          <span>Patrocinador Existente ({existingMerchants.length})</span>
+          <span>Anunciante Existente ({existingMerchants.length})</span>
         </button>
       </div>
 
@@ -140,7 +142,7 @@ export const AddTicketModal: React.FC<Props> = ({
             <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
               <div>
                 <span className="font-bold text-slate-800 dark:text-slate-200 block">Moneda de Cobro</span>
-                <span className="text-[11px] text-slate-400">Selecciona si pautará en Pesos o en Dólares</span>
+                <span className="text-[11px] text-slate-400">Selecciona si la pauta es en Pesos o en Dólares</span>
               </div>
               <div className="inline-flex gap-1 bg-slate-200 dark:bg-slate-700 p-0.5 rounded-lg">
                 <button
@@ -166,55 +168,81 @@ export const AddTicketModal: React.FC<Props> = ({
               </div>
             </div>
 
-            <LogoFetcherInput
-              businessName={name}
-              logoUrl={logoUrl}
-              socialUrl={socialUrl}
-              onLogoChange={setLogoUrl}
-              onSocialChange={setSocialUrl}
-            />
-
+            {/* Campos Principales y Esenciales */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nombre del Local / Comercio *</label>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Nombre del Comercio / Anunciante *
+                </label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ej: Panadería La Esperanza"
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Teléfono / WhatsApp *</label>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Teléfono / WhatsApp *
+                </label>
                 <input
                   type="tel"
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="Ej: +57 310 1234567"
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:border-indigo-500"
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Dirección del Establecimiento *</label>
-              <input
-                type="text"
-                required
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Ej: Carrera 5 #14-20, Centro"
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-              />
+            {/* Detalles Opcionales Plegables (Logo, Dirección, Redes) */}
+            <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowOptionalDetails(!showOptionalDetails)}
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between text-slate-600 dark:text-slate-400 font-semibold transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>Datos Adicionales Opcionales (Logo, Dirección, Red Social)</span>
+                </div>
+                {showOptionalDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+
+              {showOptionalDetails && (
+                <div className="p-3 bg-white dark:bg-slate-900/60 space-y-3 border-t border-slate-200 dark:border-slate-800">
+                  <LogoFetcherInput
+                    businessName={name}
+                    logoUrl={logoUrl}
+                    socialUrl={socialUrl}
+                    onLogoChange={setLogoUrl}
+                    onSocialChange={setSocialUrl}
+                  />
+
+                  <div>
+                    <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Dirección del Establecimiento (Opcional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      placeholder="Ej: Carrera 5 #14-20, Centro"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </>
         ) : (
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Seleccionar Patrocinador Afiliado</label>
+            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Seleccionar Anunciante Registrado</label>
             <select
               required
               value={selectedMerchantId}
@@ -226,12 +254,12 @@ export const AddTicketModal: React.FC<Props> = ({
                   setTicketPrice(String(found.ticketPrice));
                 }
               }}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-semibold"
             >
-              <option value="">-- Elige un patrocinador --</option>
+              <option value="">-- Elige un anunciante --</option>
               {existingMerchants.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.name} ({m.ticketsCount} boletos - {m.currency || 'COP'})
+                  {m.name} ({m.ticketsCount} espacios - {m.currency || 'COP'})
                 </option>
               ))}
             </select>
@@ -261,16 +289,16 @@ export const AddTicketModal: React.FC<Props> = ({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+            className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={submitting || (mode === 'existing' && !selectedMerchantId)}
-            className="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md shadow-indigo-600/20 disabled:opacity-40 transition-colors cursor-pointer"
+            className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 disabled:opacity-40 transition-all cursor-pointer"
           >
-            {submitting ? 'Guardando...' : 'Confirmar Venta de Tickets'}
+            {submitting ? 'Guardando...' : 'Guardar Anunciante'}
           </button>
         </div>
       </form>

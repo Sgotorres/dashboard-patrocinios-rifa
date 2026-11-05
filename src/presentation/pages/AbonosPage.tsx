@@ -122,7 +122,7 @@ export const AbonosPage: React.FC<Props> = (props) => {
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Patrocinadores con cuotas iniciales recibidas y saldos por liquidar
+              Anunciantes con abonos recibidos y saldos pendientes por liquidar
             </p>
           </div>
         </div>

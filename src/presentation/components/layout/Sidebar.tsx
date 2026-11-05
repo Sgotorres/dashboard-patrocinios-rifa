@@ -150,7 +150,7 @@ export const Sidebar: React.FC<Props> = ({
               className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 cursor-pointer transition-all active:scale-[0.98]"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>Añadir Ticket / Comercio</span>
+              <span>+ Nuevo Anunciante</span>
             </button>
           </div>
 
