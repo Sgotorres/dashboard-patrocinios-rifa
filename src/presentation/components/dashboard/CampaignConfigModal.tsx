@@ -79,8 +79,8 @@ export const CampaignConfigModal: React.FC<Props> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Configuración de la Campaña de Rifa"
-      subtitle="Ajusta la meta de boletos, precio y respaldo de datos"
+      title="Configuración de Campaña"
+      subtitle="Gran Rifa Viaje a la Playa 🏖️ • Meta de boletos, precio y respaldo"
       maxWidth="sm"
     >
       <div className="space-y-4 text-xs">

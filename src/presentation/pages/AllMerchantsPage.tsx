@@ -48,15 +48,15 @@ export const AllMerchantsPage: React.FC<Props> = ({
     <div className="space-y-5">
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900">
+          <div className="p-2.5 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-900">
             <Store className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              Directorio General de Comercios Patrocinadores
+            <h2 className="text-base font-black text-slate-900 dark:text-white">
+              Directorio de Comercios Patrocinadores
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              {allMerchants.length} locales registrados comprando tickets de rifa
+              {allMerchants.length} locales registrados para la Gran Rifa Viaje a la Playa 🏖️
             </p>
           </div>
         </div>
@@ -71,7 +71,7 @@ export const AllMerchantsPage: React.FC<Props> = ({
           </button>
           <button
             onClick={onOpenAddTicket}
-            className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-xs cursor-pointer whitespace-nowrap"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600 hover:from-teal-500 hover:to-cyan-500 text-white font-bold text-xs shadow-md shadow-cyan-600/20 cursor-pointer whitespace-nowrap"
           >
             <Plus className="w-4 h-4" />
             <span>Añadir Comercio / Ticket</span>

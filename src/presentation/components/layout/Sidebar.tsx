@@ -4,10 +4,11 @@ import {
   Store,
   AlertTriangle,
   Clock,
-  Ticket,
+  Palmtree,
   PlusCircle,
   X,
-  Sparkles,
+  Waves,
+  Sun,
 } from 'lucide-react';
 import { ThemeToggle } from '../common/ThemeToggle';
 
@@ -33,7 +34,7 @@ export const Sidebar: React.FC<Props> = ({
   const navItems: { id: ActiveTab; label: string; icon: React.ElementType; badge?: number; badgeColor?: string }[] = [
     {
       id: 'dashboard',
-      label: 'Dashboard General',
+      label: 'Panel General',
       icon: LayoutDashboard,
     },
     {
@@ -41,7 +42,7 @@ export const Sidebar: React.FC<Props> = ({
       label: 'Comercios Totales',
       icon: Store,
       badge: counts.all,
-      badgeColor: 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300',
+      badgeColor: 'bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300',
     },
     {
       id: 'debtors',
@@ -66,7 +67,6 @@ export const Sidebar: React.FC<Props> = ({
 
   return (
     <>
-      {/* Mobile Backdrop */}
       {isOpenMobile && (
         <div
           className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs md:hidden"
@@ -74,25 +74,32 @@ export const Sidebar: React.FC<Props> = ({
         />
       )}
 
-      {/* Sidebar Container */}
       <aside
-        className={`fixed md:sticky top-0 left-0 z-40 h-screen w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-transform duration-300 ease-in-out md:translate-x-0 ${
+        className={`fixed md:sticky top-0 left-0 z-40 h-screen w-64 bg-white dark:bg-slate-900 border-r border-slate-200/90 dark:border-slate-800 flex flex-col justify-between transition-transform duration-300 ease-in-out md:translate-x-0 ${
           isOpenMobile ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
       >
         <div className="p-4 sm:p-5 flex-1 flex flex-col">
-          {/* Logo Header */}
-          <div className="flex items-center justify-between pb-5 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
-                <Ticket className="w-5 h-5" />
+          {/* Brand Logo & Title */}
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-600 via-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-cyan-500/25">
+                  <Palmtree className="w-5 h-5 text-white" />
+                </div>
+                <div className="absolute -top-1 -right-1 p-0.5 rounded-full bg-amber-400 text-amber-950 shadow-xs">
+                  <Sun className="w-2.5 h-2.5" />
+                </div>
               </div>
               <div>
-                <h1 className="font-extrabold text-sm text-slate-900 dark:text-white tracking-tight flex items-center gap-1">
-                  <span>Rifa & Cobranzas</span>
+                <h1 className="font-black text-sm text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5 leading-tight">
+                  <span>Gran Rifa</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-300 font-extrabold uppercase border border-teal-200 dark:border-teal-800">
+                    Playa
+                  </span>
                 </h1>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                  Control de Patrocinios
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                  Viaje a la Playa 🏖️
                 </p>
               </div>
             </div>
@@ -112,7 +119,7 @@ export const Sidebar: React.FC<Props> = ({
                 onOpenAddTicket();
                 onCloseMobile();
               }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 cursor-pointer transition-all active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600 hover:from-teal-500 hover:to-cyan-500 text-white font-bold text-xs shadow-md shadow-cyan-600/20 cursor-pointer transition-all active:scale-[0.98]"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Añadir Ticket / Comercio</span>
@@ -121,8 +128,8 @@ export const Sidebar: React.FC<Props> = ({
 
           {/* Navigation Links */}
           <nav className="space-y-1 pt-3 flex-1">
-            <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400 dark:text-slate-500 px-3">
-              Módulos Principales
+            <span className="text-[10px] font-extrabold tracking-wider uppercase text-slate-400 dark:text-slate-500 px-3">
+              Módulos de Cobranza
             </span>
 
             {navItems.map((item) => {
@@ -134,12 +141,12 @@ export const Sidebar: React.FC<Props> = ({
                   onClick={() => handleNavClick(item.id)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/60 shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 border border-transparent'
+                      ? 'bg-teal-50/80 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-l-4 border-teal-500 shadow-xs font-bold'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 border-l-4 border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400'}`} />
                     <span>{item.label}</span>
                   </div>
                   {item.badge !== undefined && (
@@ -154,7 +161,7 @@ export const Sidebar: React.FC<Props> = ({
         </div>
 
         {/* Footer info & Theme Toggle */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-3">
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/50 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
               Tema Visual
@@ -162,9 +169,9 @@ export const Sidebar: React.FC<Props> = ({
             <ThemeToggle showLabel={false} />
           </div>
 
-          <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-            <span>Base Local Offline (Dexie.js)</span>
+          <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2">
+            <Waves className="w-3.5 h-3.5 text-teal-500 shrink-0" />
+            <span className="truncate">Rumbo a la Playa &bull; Offline OK</span>
           </div>
         </div>
       </aside>

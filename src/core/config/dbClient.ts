@@ -131,12 +131,18 @@ export async function ensureSeedData(): Promise<void> {
     const totalSoldInitial = initialMerchants.reduce((sum, m) => sum + m.ticketsCount, 0);
     await db.raffleStats.put({
       id: 'main-campaign',
-      campaignName: 'Gran Rifa Pro-Fondos & Patrocinios 2026',
+      campaignName: 'Gran Rifa Viaje a la Playa',
       totalTickets: 500,
       ticketsSold: totalSoldInitial,
       ticketPrice: 10,
       targetRevenue: 5000,
     });
+  } else if (
+    existingStats.campaignName.includes('Pro-Fondos') ||
+    existingStats.campaignName.includes('Campaña Principal')
+  ) {
+    existingStats.campaignName = 'Gran Rifa Viaje a la Playa';
+    await db.raffleStats.put(existingStats);
   }
 
   const merchantsCount = await db.merchants.count();

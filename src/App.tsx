@@ -63,7 +63,7 @@ function DashboardApp() {
       activeTab={activeTab}
       onSelectTab={setActiveTab}
       counts={counts}
-      campaignName={stats?.campaignName || 'Gran Rifa y Patrocinios'}
+      campaignName={stats?.campaignName || 'Gran Rifa Viaje a la Playa'}
       onOpenAddTicket={() => setIsAddTicketOpen(true)}
     >
       {activeTab === 'dashboard' && (

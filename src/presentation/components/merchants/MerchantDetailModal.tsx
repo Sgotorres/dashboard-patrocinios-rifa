@@ -40,7 +40,7 @@ export const MerchantDetailModal: React.FC<Props> = ({
   const paidB = getTriBreakdown(merchant.amountPaid);
 
   const waCobroMsg = encodeURIComponent(
-    `Hola ${merchant.name}, le escribimos de la Gran Rifa para coordinar el saldo pendiente de ${b.usd} (equiv. ${b.ves} a Tasa BCV o ${b.cop}) por sus ${merchant.ticketsCount} tickets.`
+    `Hola ${merchant.name}, le escribimos de la Gran Rifa Viaje a la Playa 🏖️ para coordinar el saldo pendiente de ${b.usd} (equiv. ${b.ves} a Tasa BCV o ${b.cop}) por sus ${merchant.ticketsCount} tickets.`
   );
   const waCobroUrl = `https://wa.me/${cleanPhone}?text=${waCobroMsg}`;
 

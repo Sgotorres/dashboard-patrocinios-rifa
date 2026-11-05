@@ -32,7 +32,7 @@ export const TableFilterBar: React.FC<Props> = ({
       key: 'all',
       label: 'Todos',
       count: counts.all,
-      activeStyle: 'bg-indigo-600 text-white shadow-xs',
+      activeStyle: 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-xs font-bold',
     },
     {
       key: 'paid',

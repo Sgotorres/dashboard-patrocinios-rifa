@@ -120,9 +120,9 @@ export function exportMerchantsToExcel(
     </style>
   </head>
   <body>
-    <h2 style="color: #1e1b4b; margin: 0; font-family: 'Segoe UI', Arial;">Control de Cobranza & Patrocinios Multimoneda</h2>
+    <h2 style="color: #0f766e; margin: 0; font-family: 'Segoe UI', Arial;">Gran Rifa Viaje a la Playa 🏖️ - Control de Cobranza</h2>
     <p style="color: #64748b; font-size: 10pt; margin: 4px 0 12px 0;">
-      Campaña: ${escapeHtml(stats?.campaignName || 'Gran Rifa')} | Fecha: ${new Date().toLocaleDateString('es-ES')} | 
+      Campaña: ${escapeHtml(stats?.campaignName || 'Gran Rifa Viaje a la Playa')} | Fecha: ${new Date().toLocaleDateString('es-ES')} | 
       <strong>Tasa Oficial BCV:</strong> Bs. ${bcv.toFixed(2)} | <strong>Tasa COP:</strong> $${Math.round(cop)} COP
     </p>
     <table>

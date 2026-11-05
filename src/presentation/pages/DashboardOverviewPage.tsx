@@ -7,7 +7,7 @@ import { ExcelExportModal } from '../components/common/ExcelExportModal';
 import type { RaffleStats } from '../../domain/models/RaffleStats';
 import type { Merchant } from '../../domain/models/Merchant';
 import type { FilterStatus, SortOption } from '../hooks/useMerchants';
-import { Sparkles, ArrowRight, FileSpreadsheet } from 'lucide-react';
+import { Waves, ArrowRight, FileSpreadsheet } from 'lucide-react';
 
 interface Props {
   stats: RaffleStats | null;
@@ -118,8 +118,8 @@ export const DashboardOverviewPage: React.FC<Props> = ({
       <section className="space-y-4 pt-2">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-indigo-500" />
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+            <Waves className="w-4 h-4 text-teal-500" />
+            <h3 className="text-base font-black text-slate-900 dark:text-white">
               Control de Cobros & Patrocinadores
             </h3>
           </div>
@@ -129,7 +129,7 @@ export const DashboardOverviewPage: React.FC<Props> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-colors cursor-pointer"
             >
               <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span>Exportar Excel Ordenado</span>
+              <span>Exportar Excel</span>
             </button>
           </div>
         </div>
@@ -162,7 +162,7 @@ export const DashboardOverviewPage: React.FC<Props> = ({
         merchants={allMerchants}
         stats={stats}
         title="Exportar Control General a Excel"
-        defaultFileName="reporte-general-cobranza"
+        defaultFileName="reporte-gran-rifa-playa"
       />
     </div>
   );

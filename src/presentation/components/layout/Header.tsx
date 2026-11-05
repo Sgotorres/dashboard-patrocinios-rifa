@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Plus } from 'lucide-react';
+import { Menu, Plus, Palmtree } from 'lucide-react';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { CurrencySelector } from '../currency/CurrencySelector';
 import { RateBadge } from '../currency/RateBadge';
@@ -18,29 +18,30 @@ export const Header: React.FC<Props> = ({
   onOpenAddTicket,
   campaignName,
 }) => {
-  const titles: Record<ActiveTab, { title: string; subtitle: string }> = {
+  const titles: Record<ActiveTab, { title: string; subtitle: string; tag?: string }> = {
     dashboard: {
       title: 'Panel General de Rifa',
-      subtitle: campaignName || 'Seguimiento de ventas, recaudación y patrocinios',
+      subtitle: campaignName || 'Gran Rifa Viaje a la Playa 🏖️ • Meta de ventas y cobranzas',
+      tag: 'En curso',
     },
     'all-merchants': {
       title: 'Comercios Totales',
-      subtitle: 'Listado completo de establecimientos que adquirieron tickets',
+      subtitle: 'Establecimientos patrocinadores que compraron tickets para el viaje',
     },
     debtors: {
       title: 'Tabla de Deudores',
-      subtitle: 'Comercios con pago pendiente (Alerta en Rojo)',
+      subtitle: 'Comercios con pago pendiente de liquidación (Alerta en Rojo)',
     },
     abonos: {
       title: 'Tabla de Abonos',
-      subtitle: 'Comercios con pagos parciales y saldos a liquidar (Amarillo)',
+      subtitle: 'Comercios con cuotas parciales y saldos en proceso (Amarillo)',
     },
   };
 
   const { title, subtitle } = titles[activeTab];
 
   return (
-    <header className="sticky top-0 z-20 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-3 sm:px-6 py-2.5 sm:py-3.5 flex flex-wrap items-center justify-between gap-2.5">
+    <header className="sticky top-0 z-20 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200/90 dark:border-slate-800 px-3 sm:px-6 py-2.5 sm:py-3.5 flex flex-wrap items-center justify-between gap-2.5">
       <div className="flex items-center gap-2.5 min-w-0">
         <button
           onClick={onOpenMobileSidebar}
@@ -51,9 +52,17 @@ export const Header: React.FC<Props> = ({
         </button>
 
         <div className="min-w-0">
-          <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight leading-snug truncate">
-            {title}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-snug truncate">
+              {title}
+            </h1>
+            {activeTab === 'dashboard' && (
+              <span className="hidden lg:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                <Palmtree className="w-3 h-3 text-teal-500" />
+                <span>Viaje a la Playa</span>
+              </span>
+            )}
+          </div>
           <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">
             {subtitle}
           </p>
@@ -71,7 +80,7 @@ export const Header: React.FC<Props> = ({
 
         <button
           onClick={onOpenAddTicket}
-          className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 cursor-pointer transition-all active:scale-95 whitespace-nowrap"
+          className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600 hover:from-teal-500 hover:to-cyan-500 text-white font-bold text-xs shadow-md shadow-cyan-600/20 cursor-pointer transition-all active:scale-95 whitespace-nowrap"
         >
           <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span className="hidden sm:inline">Añadir Ticket</span>
