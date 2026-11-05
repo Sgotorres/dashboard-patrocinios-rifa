@@ -1,11 +1,17 @@
 {
-  "name": "dashboard-patrocinios",
+  "name": "gran-rifa-viaje-a-la-playa",
+  "productName": "Gran Rifa Viaje a la Playa - Cinelandia",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Sistema de Control de Cobranza y Patrocinios - Gran Rifa Viaje a la Playa (Cinelandia)",
+  "author": "Eduardo",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "electron:start": "npm run build && electron .",
+    "electron:build": "npm run build && electron-builder --win",
     "lint": "oxlint",
     "preview": "vite preview"
   },
@@ -21,9 +27,49 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0",
     "oxlint": "^1.88.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.3",
     "vite": "^8.3.4"
+  },
+  "build": {
+    "appId": "com.cinelandia.granrifaplayacobranza",
+    "productName": "Gran Rifa Viaje a la Playa - Cinelandia",
+    "asar": false,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Gran Rifa Viaje a la Playa - Cinelandia",
+      "installerIcon": "public/icon.ico",
+      "uninstallerIcon": "public/icon.ico"
+    }
   }
 }
