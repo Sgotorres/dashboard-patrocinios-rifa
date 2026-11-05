@@ -3,6 +3,7 @@ import { TableFilterBar } from '../components/tables/TableFilterBar';
 import { MerchantsDataTable } from '../components/tables/MerchantsDataTable';
 import { ExcelExportModal } from '../components/common/ExcelExportModal';
 import { TriCurrencyAmount } from '../components/currency/TriCurrencyAmount';
+import { normalizeSearch } from '../../core/utils/textUtils';
 import type { Merchant } from '../../domain/models/Merchant';
 import type { RaffleStats } from '../../domain/models/RaffleStats';
 import type { SortOption } from '../hooks/useMerchants';
@@ -40,15 +41,15 @@ export const AbonosPage: React.FC<Props> = ({
   const [isExportOpen, setIsExportOpen] = useState(false);
 
   const abonosMerchants = useMemo(() => {
-    const query = search.toLowerCase().trim();
+    const query = normalizeSearch(search);
     return allMerchants
       .filter((m) => m.paymentStatus === 'pending')
       .filter((m) => {
         if (!query) return true;
         return (
-          m.name.toLowerCase().includes(query) ||
-          m.phone.toLowerCase().includes(query) ||
-          m.address.toLowerCase().includes(query)
+          normalizeSearch(m.name).includes(query) ||
+          normalizeSearch(m.phone).includes(query) ||
+          normalizeSearch(m.address).includes(query)
         );
       });
   }, [allMerchants, search]);

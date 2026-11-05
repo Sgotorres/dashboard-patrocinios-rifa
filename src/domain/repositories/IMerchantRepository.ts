@@ -7,6 +7,12 @@ export interface IMerchantRepository {
   update(id: string, dto: UpdateMerchantDTO): Promise<Merchant>;
   markAsPaid(id: string): Promise<Merchant>;
   addPayment(id: string, amount: number, note?: string): Promise<Merchant>;
-  addTickets(id: string, ticketsDelta: number): Promise<Merchant>;
+  addTickets(
+    id: string,
+    ticketsDelta: number,
+    unitPrice?: number,
+    paymentAmount?: number,
+    paymentNote?: string
+  ): Promise<Merchant>;
   delete(id: string): Promise<void>;
 }

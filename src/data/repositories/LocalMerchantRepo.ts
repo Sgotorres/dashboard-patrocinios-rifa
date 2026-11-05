@@ -3,14 +3,26 @@ import type { CreateMerchantDTO, Merchant, PaymentRecord, PaymentStatus, UpdateM
 import type { IMerchantRepository } from '../../domain/repositories/IMerchantRepository';
 
 export class LocalMerchantRepo implements IMerchantRepository {
-  private calculateStatus(totalFee: number, amountPaid: number, explicitStatus?: PaymentStatus): { status: PaymentStatus; paid: number } {
-    if (explicitStatus === 'paid' || amountPaid >= totalFee) {
-      return { status: 'paid', paid: totalFee };
+  private calculateStatus(
+    totalFee: number,
+    amountPaid: number,
+    explicitStatus?: PaymentStatus
+  ): { status: PaymentStatus; paid: number } {
+    const fee = Math.round(totalFee * 100) / 100;
+    const paid = Math.round(amountPaid * 100) / 100;
+    const remaining = fee - paid;
+
+    // Tolerancia de 5 céntimos para cierres contables por tasa de cambio
+    if (explicitStatus === 'paid' || remaining <= 0.05) {
+      return { status: 'paid', paid: fee };
     }
-    if (explicitStatus === 'unpaid' || amountPaid <= 0) {
+    if (explicitStatus === 'unpaid' && paid <= 0) {
       return { status: 'unpaid', paid: 0 };
     }
-    return { status: 'pending', paid: amountPaid };
+    if (paid > 0) {
+      return { status: 'pending', paid };
+    }
+    return { status: 'unpaid', paid: 0 };
   }
 
   async getAll(): Promise<Merchant[]> {
@@ -27,8 +39,8 @@ export class LocalMerchantRepo implements IMerchantRepository {
   async create(data: CreateMerchantDTO): Promise<Merchant> {
     await ensureSeedData();
     const tickets = Math.max(1, data.ticketsCount || 1);
-    const unitPrice = Math.max(0, data.ticketPrice || 10);
-    const totalFee = data.totalFee ?? (tickets * unitPrice);
+    const unitPrice = Math.max(0, data.ticketPrice ?? 10);
+    const totalFee = Math.round((data.totalFee ?? (tickets * unitPrice)) * 100) / 100;
     const { status, paid } = this.calculateStatus(totalFee, data.amountPaid || 0, data.paymentStatus);
 
     const now = new Date().toISOString();
@@ -38,7 +50,7 @@ export class LocalMerchantRepo implements IMerchantRepository {
         id: crypto.randomUUID(),
         amount: paid,
         date: now,
-        note: data.initialNote || 'Abono inicial al registrar ticket',
+        note: data.initialNote || (status === 'paid' ? 'Pago total al registrar ticket' : 'Abono inicial al registrar ticket'),
       });
     }
 
@@ -70,7 +82,7 @@ export class LocalMerchantRepo implements IMerchantRepository {
 
     const tickets = data.ticketsCount !== undefined ? Math.max(1, data.ticketsCount) : current.ticketsCount;
     const unitPrice = data.ticketPrice !== undefined ? Math.max(0, data.ticketPrice) : current.ticketPrice;
-    const totalFee = data.totalFee !== undefined ? data.totalFee : (tickets * unitPrice);
+    const totalFee = data.totalFee !== undefined ? data.totalFee : Math.round(tickets * unitPrice * 100) / 100;
     const rawPaid = data.amountPaid !== undefined ? data.amountPaid : current.amountPaid;
     const { status, paid } = this.calculateStatus(totalFee, rawPaid, data.paymentStatus);
 
@@ -93,10 +105,10 @@ export class LocalMerchantRepo implements IMerchantRepository {
     const current = await db.merchants.get(id);
     if (!current) throw new Error('Comercio no encontrado');
 
-    const remaining = Math.max(0, current.totalFee - current.amountPaid);
+    const remaining = Math.max(0, Math.round((current.totalFee - current.amountPaid) * 100) / 100);
     const history = [...current.paymentHistory];
     if (remaining > 0) {
-      history.push({
+      history.unshift({
         id: crypto.randomUUID(),
         amount: remaining,
         date: new Date().toISOString(),
@@ -120,9 +132,15 @@ export class LocalMerchantRepo implements IMerchantRepository {
     const current = await db.merchants.get(id);
     if (!current) throw new Error('Comercio no encontrado');
 
-    const cleanAmount = Math.max(0, amount);
-    const newPaid = Math.min(current.totalFee, current.amountPaid + cleanAmount);
-    const { status } = this.calculateStatus(current.totalFee, newPaid);
+    const cleanAmount = Math.max(0, Math.round(amount * 100) / 100);
+    let newPaid = Math.round((current.amountPaid + cleanAmount) * 100) / 100;
+
+    // Si resta 5 céntimos o menos tras el abono, cerrar en solvente total
+    if (current.totalFee - newPaid <= 0.05) {
+      newPaid = current.totalFee;
+    }
+
+    const { status, paid } = this.calculateStatus(current.totalFee, newPaid);
 
     const newRecord: PaymentRecord = {
       id: crypto.randomUUID(),
@@ -133,7 +151,7 @@ export class LocalMerchantRepo implements IMerchantRepository {
 
     const updated: Merchant = {
       ...current,
-      amountPaid: newPaid,
+      amountPaid: paid,
       paymentStatus: status,
       paymentHistory: [newRecord, ...current.paymentHistory],
       updatedAt: new Date().toISOString(),
@@ -143,19 +161,45 @@ export class LocalMerchantRepo implements IMerchantRepository {
     return updated;
   }
 
-  async addTickets(id: string, ticketsDelta: number): Promise<Merchant> {
+  async addTickets(
+    id: string,
+    ticketsDelta: number,
+    unitPrice?: number,
+    paymentAmount?: number,
+    paymentNote?: string
+  ): Promise<Merchant> {
     const current = await db.merchants.get(id);
     if (!current) throw new Error('Comercio no encontrado');
 
+    const effectivePrice = unitPrice !== undefined && unitPrice >= 0 ? unitPrice : current.ticketPrice;
     const newTickets = Math.max(1, current.ticketsCount + ticketsDelta);
-    const newTotalFee = newTickets * current.ticketPrice;
-    const { status } = this.calculateStatus(newTotalFee, current.amountPaid);
+    const addedFee = Math.round(ticketsDelta * effectivePrice * 100) / 100;
+    const newTotalFee = Math.round((current.totalFee + addedFee) * 100) / 100;
+
+    let newPaid = current.amountPaid;
+    const history = [...current.paymentHistory];
+
+    if (paymentAmount && paymentAmount > 0) {
+      const cleanPayment = Math.round(paymentAmount * 100) / 100;
+      newPaid = Math.round((newPaid + cleanPayment) * 100) / 100;
+      history.unshift({
+        id: crypto.randomUUID(),
+        amount: cleanPayment,
+        date: new Date().toISOString(),
+        note: paymentNote || `Abono de ${cleanPayment}$ al sumar ${ticketsDelta} tickets`,
+      });
+    }
+
+    const { status, paid } = this.calculateStatus(newTotalFee, newPaid);
 
     const updated: Merchant = {
       ...current,
       ticketsCount: newTickets,
+      ticketPrice: effectivePrice,
       totalFee: newTotalFee,
+      amountPaid: paid,
       paymentStatus: status,
+      paymentHistory: history,
       updatedAt: new Date().toISOString(),
     };
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { merchantRepository, raffleRepository } from '../../core/di/container';
 import type { CreateMerchantDTO, Merchant, PaymentStatus, UpdateMerchantDTO } from '../../domain/models/Merchant';
+import { normalizeSearch } from '../../core/utils/textUtils';
 
 export type FilterStatus = 'all' | PaymentStatus;
 export type SortOption = 'recent' | 'name' | 'debt-desc' | 'paid-desc' | 'tickets-desc';
@@ -57,8 +58,14 @@ export function useMerchants() {
     return updated;
   };
 
-  const addTickets = async (id: string, ticketsDelta: number) => {
-    const updated = await merchantRepository.addTickets(id, ticketsDelta);
+  const addTickets = async (
+    id: string,
+    ticketsDelta: number,
+    unitPrice?: number,
+    paymentAmount?: number,
+    paymentNote?: string
+  ) => {
+    const updated = await merchantRepository.addTickets(id, ticketsDelta, unitPrice, paymentAmount, paymentNote);
     setMerchants((prev) => prev.map((m) => (m.id === id ? updated : m)));
     await raffleRepository.adjustTicketsSold(ticketsDelta);
     return updated;
@@ -98,15 +105,15 @@ export function useMerchants() {
   }, [merchants]);
 
   const filteredMerchants = useMemo(() => {
-    const query = search.toLowerCase().trim();
+    const query = normalizeSearch(search);
     let result = merchants.filter((m) => {
       const matchesFilter = filter === 'all' || m.paymentStatus === filter;
+      if (!query) return matchesFilter;
       const matchesSearch =
-        !query ||
-        m.name.toLowerCase().includes(query) ||
-        m.phone.toLowerCase().includes(query) ||
-        m.address.toLowerCase().includes(query) ||
-        (m.socialUrl && m.socialUrl.toLowerCase().includes(query));
+        normalizeSearch(m.name).includes(query) ||
+        normalizeSearch(m.phone).includes(query) ||
+        normalizeSearch(m.address).includes(query) ||
+        (m.socialUrl && normalizeSearch(m.socialUrl).includes(query));
       return matchesFilter && matchesSearch;
     });
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Globe, AtSign } from 'lucide-react';
+import { cleanSocialHandle } from '../../../core/utils/logoResolver';
 
 interface Props {
   name: string;
@@ -32,16 +33,8 @@ export const LogoAvatar: React.FC<Props> = ({
     .map((w) => w[0]?.toUpperCase())
     .join('') || 'CO';
 
-  const getSocialBadge = () => {
-    if (!socialUrl) return null;
-    const lower = socialUrl.toLowerCase();
-    if (lower.includes('instagram') || lower.startsWith('@')) {
-      return <AtSign className="w-2.5 h-2.5 text-pink-500" />;
-    }
-    return <Globe className="w-2.5 h-2.5 text-emerald-500" />;
-  };
-
-  const hasValidLogo = logoUrl && !imgError && logoUrl.trim() !== '';
+  const cleanedSocial = cleanSocialHandle(socialUrl || '');
+  const hasValidLogo = Boolean(logoUrl && !imgError && logoUrl.trim() !== '');
 
   return (
     <div className="relative inline-block shrink-0">
@@ -65,16 +58,20 @@ export const LogoAvatar: React.FC<Props> = ({
         )}
       </div>
 
-      {socialUrl && size !== 'sm' && (
+      {cleanedSocial.fullUrl && size !== 'sm' && (
         <a
-          href={socialUrl}
+          href={cleanedSocial.fullUrl}
           target="_blank"
           rel="noreferrer"
           onClick={(e) => e.stopPropagation()}
           className="absolute -bottom-1 -right-1 p-0.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xs flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
-          title={`Abrir perfil: ${socialUrl}`}
+          title={`Abrir perfil: ${cleanedSocial.fullUrl}`}
         >
-          {getSocialBadge()}
+          {cleanedSocial.isInstagram ? (
+            <AtSign className="w-2.5 h-2.5 text-pink-500" />
+          ) : (
+            <Globe className="w-2.5 h-2.5 text-emerald-500" />
+          )}
         </a>
       )}
     </div>

@@ -62,7 +62,12 @@ export const QuickAbonoModal: React.FC<Props> = ({
         finalNote = finalNote ? `${finalNote} ${copTag}` : copTag;
       }
 
-      await onSubmit(merchant.id, Math.round(calculatedUsd * 100) / 100, finalNote || undefined);
+      let finalUsdAmount = Math.round(calculatedUsd * 100) / 100;
+      if (Math.abs(remainingUsd - finalUsdAmount) <= 0.05) {
+        finalUsdAmount = remainingUsd;
+      }
+
+      await onSubmit(merchant.id, finalUsdAmount, finalNote || undefined);
       setAmount('');
       setNote('');
       onClose();

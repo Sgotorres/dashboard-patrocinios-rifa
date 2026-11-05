@@ -43,7 +43,7 @@ export class LocalRaffleRepo implements IRaffleRepository {
 
   async recalculateSoldFromMerchants(merchantsTicketsSum: number): Promise<RaffleStats> {
     const current = await this.getStats();
-    const clampedSold = Math.max(merchantsTicketsSum, current.ticketsSold);
+    const clampedSold = Math.max(0, Math.min(current.totalTickets, merchantsTicketsSum));
     const updated: RaffleStats = { ...current, ticketsSold: clampedSold };
     await db.raffleStats.put(updated);
     return updated;

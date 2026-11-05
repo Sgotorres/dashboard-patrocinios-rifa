@@ -44,7 +44,7 @@ function DashboardApp() {
     percentage,
     remainingTickets,
     updateCampaign,
-  } = useTicketStats();
+  } = useTicketStats(finances.totalTicketsBought);
 
   // Modals state
   const [isAddTicketOpen, setIsAddTicketOpen] = useState(false);
@@ -152,7 +152,7 @@ function DashboardApp() {
         defaultTicketPrice={stats?.ticketPrice || 10}
         existingMerchants={allMerchants}
         onRegisterNewMerchant={createMerchant}
-        onAddTicketsToExisting={(id, count) => addTickets(id, count)}
+        onAddTicketsToExisting={(id, count, price, paid, note) => addTickets(id, count, price, paid, note)}
       />
 
       {/* Merchant Detail Modal */}
