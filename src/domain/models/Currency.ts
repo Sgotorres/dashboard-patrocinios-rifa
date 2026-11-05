@@ -28,7 +28,7 @@ export const CURRENCIES: Record<CurrencyCode, CurrencyConfig> = {
     symbol: '$',
     prefix: '$',
     suffix: '',
-    flag: '🇺🇸',
+    flag: 'USD',
     description: 'Dólar Estadounidense (Moneda base)',
   },
   VES: {
@@ -37,7 +37,7 @@ export const CURRENCIES: Record<CurrencyCode, CurrencyConfig> = {
     symbol: 'Bs.',
     prefix: 'Bs. ',
     suffix: '',
-    flag: '🇻🇪',
+    flag: 'VES',
     description: 'Bolívar Digital (Tasa Oficial BCV)',
   },
   COP: {
@@ -46,7 +46,7 @@ export const CURRENCIES: Record<CurrencyCode, CurrencyConfig> = {
     symbol: 'COP',
     prefix: '$',
     suffix: ' COP',
-    flag: '🇨🇴',
+    flag: 'COP',
     description: 'Peso Colombiano',
   },
 };

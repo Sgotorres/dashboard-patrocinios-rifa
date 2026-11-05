@@ -56,7 +56,7 @@ export const AllMerchantsPage: React.FC<Props> = ({
               Directorio de Comercios Patrocinadores
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              {allMerchants.length} locales registrados para la Gran Rifa Viaje a la Playa 🏖️
+              {allMerchants.length} locales registrados para la Gran Rifa Viaje a la Playa
             </p>
           </div>
         </div>

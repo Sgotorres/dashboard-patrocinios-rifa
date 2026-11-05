@@ -21,7 +21,7 @@ export const Header: React.FC<Props> = ({
   const titles: Record<ActiveTab, { title: string; subtitle: string; tag?: string }> = {
     dashboard: {
       title: 'Panel General de Rifa',
-      subtitle: campaignName || 'Gran Rifa Viaje a la Playa 🏖️ • Meta de ventas y cobranzas',
+      subtitle: campaignName || 'Gran Rifa Viaje a la Playa • Meta de ventas y cobranzas',
       tag: 'En curso',
     },
     'all-merchants': {

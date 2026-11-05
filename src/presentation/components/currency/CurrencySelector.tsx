@@ -10,10 +10,10 @@ interface Props {
 export const CurrencySelector: React.FC<Props> = ({ className = '', compact = false }) => {
   const { activeCurrency, setActiveCurrency } = useCurrency();
 
-  const options: { code: CurrencyCode; label: string; shortLabel: string; flag: string }[] = [
-    { code: 'USD', label: 'USD ($)', shortLabel: '$ USD', flag: '🇺🇸' },
-    { code: 'VES', label: 'Bs. (BCV)', shortLabel: 'Bs.', flag: '🇻🇪' },
-    { code: 'COP', label: 'COP ($)', shortLabel: 'COP', flag: '🇨🇴' },
+  const options: { code: CurrencyCode; label: string; shortLabel: string }[] = [
+    { code: 'USD', label: 'USD ($)', shortLabel: '$ USD' },
+    { code: 'VES', label: 'Bs. (BCV)', shortLabel: 'Bs.' },
+    { code: 'COP', label: 'COP ($)', shortLabel: 'COP' },
   ];
 
   return (
@@ -31,11 +31,10 @@ export const CurrencySelector: React.FC<Props> = ({ className = '', compact = fa
             onClick={() => setActiveCurrency(opt.code)}
             className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
               isActive
-                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                ? 'bg-white dark:bg-slate-900 text-teal-600 dark:text-teal-400 shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <span>{opt.flag}</span>
             <span>{compact ? opt.shortLabel : opt.label}</span>
           </button>
         );

@@ -80,7 +80,7 @@ export const CampaignConfigModal: React.FC<Props> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Configuración de Campaña"
-      subtitle="Gran Rifa Viaje a la Playa 🏖️ • Meta de boletos, precio y respaldo"
+      subtitle="Gran Rifa Viaje a la Playa • Meta de boletos, precio y respaldo"
       maxWidth="sm"
     >
       <div className="space-y-4 text-xs">

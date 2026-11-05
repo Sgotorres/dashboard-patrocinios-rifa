@@ -79,7 +79,7 @@ export const ExchangeRateModal: React.FC<Props> = ({ isOpen, onClose }) => {
         <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/70 rounded-xl space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-base">🇻🇪</span>
+              <span className="px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-extrabold text-[11px]">VES</span>
               <div>
                 <h4 className="font-bold text-slate-900 dark:text-white">
                   Banco Central de Venezuela (BCV)
@@ -115,7 +115,7 @@ export const ExchangeRateModal: React.FC<Props> = ({ isOpen, onClose }) => {
         <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/70 rounded-xl space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-base">🇨🇴</span>
+              <span className="px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-extrabold text-[11px]">COP</span>
               <div>
                 <h4 className="font-bold text-slate-900 dark:text-white">
                   Peso Colombiano (COP)

@@ -5,7 +5,7 @@ import { TicketPricingFields } from './TicketPricingFields';
 import { PaymentStatusSelector } from './PaymentStatusSelector';
 import type { CreateMerchantDTO, Merchant, PaymentStatus } from '../../../domain/models/Merchant';
 import { isPhoneDuplicate } from '../../../core/utils/textUtils';
-import { Store, PlusCircle } from 'lucide-react';
+import { Store, PlusCircle, AlertCircle } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -121,7 +121,10 @@ export const AddTicketModal: React.FC<Props> = ({
 
       {duplicate && (
         <div className="mb-3 p-2 bg-amber-500/15 border border-amber-500/30 rounded-xl flex items-center justify-between gap-2 text-amber-900 dark:text-amber-200 text-xs">
-          <span className="truncate">⚠️ Ya registrado: <strong>{duplicate.name}</strong> ({duplicate.phone})</span>
+          <span className="truncate flex items-center gap-1.5">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <span>Ya registrado: <strong>{duplicate.name}</strong> ({duplicate.phone})</span>
+          </span>
           <button
             type="button"
             onClick={() => { setMode('existing'); handleSelectExisting(duplicate.id); }}

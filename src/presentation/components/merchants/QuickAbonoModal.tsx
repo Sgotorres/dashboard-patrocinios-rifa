@@ -116,33 +116,33 @@ export const QuickAbonoModal: React.FC<Props> = ({
                 onClick={() => setPayCurrency('USD')}
                 className={`py-1.5 rounded-lg font-bold text-xs cursor-pointer transition-colors ${
                   payCurrency === 'USD'
-                    ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                    ? 'bg-white dark:bg-slate-900 text-teal-600 dark:text-teal-400 shadow-xs'
                     : 'text-slate-600 dark:text-slate-400'
                 }`}
               >
-                🇺🇸 USD ($)
+                USD ($)
               </button>
               <button
                 type="button"
                 onClick={() => setPayCurrency('VES')}
                 className={`py-1.5 rounded-lg font-bold text-xs cursor-pointer transition-colors ${
                   payCurrency === 'VES'
-                    ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                    ? 'bg-white dark:bg-slate-900 text-teal-600 dark:text-teal-400 shadow-xs'
                     : 'text-slate-600 dark:text-slate-400'
                 }`}
               >
-                🇻🇪 Bs. (BCV)
+                Bs. (BCV)
               </button>
               <button
                 type="button"
                 onClick={() => setPayCurrency('COP')}
                 className={`py-1.5 rounded-lg font-bold text-xs cursor-pointer transition-colors ${
                   payCurrency === 'COP'
-                    ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                    ? 'bg-white dark:bg-slate-900 text-teal-600 dark:text-teal-400 shadow-xs'
                     : 'text-slate-600 dark:text-slate-400'
                 }`}
               >
-                🇨🇴 COP ($)
+                COP ($)
               </button>
             </div>
           </div>

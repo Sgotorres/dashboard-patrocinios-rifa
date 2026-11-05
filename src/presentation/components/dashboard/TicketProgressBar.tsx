@@ -46,7 +46,6 @@ export const TicketProgressBar: React.FC<Props> = ({
             <div className="flex items-center gap-2">
               <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
                 <span>Gran Rifa Viaje a la Playa</span>
-                <span className="text-sm">🏖️</span>
               </h2>
               <button
                 type="button"

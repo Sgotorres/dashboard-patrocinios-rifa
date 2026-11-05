@@ -1,4 +1,5 @@
 import React from 'react';
+import cinelandiaLogo from '../../../assets/cinelandia-logo.jpg';
 import {
   LayoutDashboard,
   Store,
@@ -8,7 +9,6 @@ import {
   PlusCircle,
   X,
   Waves,
-  Sun,
 } from 'lucide-react';
 import { ThemeToggle } from '../common/ThemeToggle';
 
@@ -83,23 +83,25 @@ export const Sidebar: React.FC<Props> = ({
           {/* Brand Logo & Title */}
           <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-600 via-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-cyan-500/25">
-                  <Palmtree className="w-5 h-5 text-white" />
-                </div>
-                <div className="absolute -top-1 -right-1 p-0.5 rounded-full bg-amber-400 text-amber-950 shadow-xs">
-                  <Sun className="w-2.5 h-2.5" />
+              <div className="relative shrink-0">
+                <img
+                  src={cinelandiaLogo}
+                  alt="Cinelandia Logo"
+                  className="w-11 h-11 rounded-2xl object-cover border-2 border-slate-200 dark:border-slate-700 shadow-sm shadow-slate-900/10"
+                />
+                <div
+                  className="absolute -bottom-1 -right-1 p-0.5 rounded-full bg-teal-500 text-white shadow-xs border border-white dark:border-slate-900"
+                  title="Gran Rifa Viaje a la Playa"
+                >
+                  <Palmtree className="w-3 h-3" />
                 </div>
               </div>
-              <div>
-                <h1 className="font-black text-sm text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5 leading-tight">
-                  <span>Gran Rifa</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-300 font-extrabold uppercase border border-teal-200 dark:border-teal-800">
-                    Playa
-                  </span>
+              <div className="min-w-0">
+                <h1 className="font-black text-sm text-slate-900 dark:text-white tracking-tight leading-tight uppercase truncate">
+                  CINELANDIA
                 </h1>
-                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                  Viaje a la Playa 🏖️
+                <p className="text-[11px] font-bold text-teal-600 dark:text-teal-400 truncate">
+                  Gran Rifa Viaje a la Playa
                 </p>
               </div>
             </div>

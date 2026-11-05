@@ -80,7 +80,7 @@ export const MerchantsDataTable: React.FC<Props> = ({
               const cleanPhone = m.phone.replace(/[^0-9]/g, '');
               const b = getTriBreakdown(remaining);
               const waMsg = encodeURIComponent(
-                `Hola ${m.name}, te escribimos de la Gran Rifa Viaje a la Playa 🏖️ para coordinar el saldo pendiente de ${b.usd} (equiv. ${b.ves} a Tasa BCV o ${b.cop}).`
+                `Hola ${m.name}, te escribimos de la Gran Rifa Viaje a la Playa para coordinar el saldo pendiente de ${b.usd} (equiv. ${b.ves} a Tasa BCV o ${b.cop}).`
               );
               const waUrl = `https://wa.me/${cleanPhone}?text=${waMsg}`;
 
