@@ -8,7 +8,6 @@ import {
   Ticket,
   PlusCircle,
   X,
-  Sparkles,
 } from 'lucide-react';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { calculateMerchantCounts, useMerchantsStore } from '../../stores/useMerchantsStore';
@@ -125,7 +124,7 @@ export const Sidebar: React.FC<Props> = ({
               </div>
               <div>
                 <h1 className="font-extrabold text-sm text-slate-900 dark:text-white tracking-tight flex items-center gap-1">
-                  <span>Rifa & Cobranzas</span>
+                  <span>Gestión Publicidad</span>
                 </h1>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                   Control de Patrocinios
@@ -190,17 +189,12 @@ export const Sidebar: React.FC<Props> = ({
         </div>
 
         {/* Footer info & Theme Toggle */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-3">
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
               Tema Visual
             </span>
             <ThemeToggle showLabel={false} />
-          </div>
-
-          <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-            <span>Base Local Offline (Dexie.js)</span>
           </div>
         </div>
       </aside>

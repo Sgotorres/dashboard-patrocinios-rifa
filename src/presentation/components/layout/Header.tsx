@@ -3,7 +3,6 @@ import { useLocation } from 'react-router-dom';
 import { Menu, Plus, ShieldCheck } from 'lucide-react';
 import { ThemeToggle } from '../common/ThemeToggle';
 import type { ActiveTab } from './Sidebar';
-import { useTicketStats } from '../../hooks/useTicketStats';
 import { useModalStore } from '../../stores/useModalStore';
 
 interface Props {
@@ -19,16 +18,14 @@ export const Header: React.FC<Props> = ({
   onOpenMobileSidebar,
   onOpenAddTicket,
   onOpenBackup,
-  campaignName: propCampaignName,
+  campaignName: _campaignName,
 }) => {
   const location = useLocation();
-  const { stats } = useTicketStats();
   const openAddTicket = useModalStore((s) => s.openAddTicket);
   const openBackup = useModalStore((s) => s.openBackup);
 
   const resolvedAddTicket = onOpenAddTicket ?? (() => openAddTicket(true));
   const resolvedBackup = onOpenBackup ?? (() => openBackup(true));
-  const campaignName = propCampaignName ?? stats?.campaignName ?? 'Publicidad de Cine & Sorteo a la Playa';
 
   const getTabFromPath = (pathname: string): ActiveTab => {
     if (pathname === '/patrocinadores') return 'all-merchants';
@@ -39,14 +36,14 @@ export const Header: React.FC<Props> = ({
 
   const activeTab = propActiveTab ?? getTabFromPath(location.pathname);
 
-  const titles: Record<ActiveTab, { title: string; subtitle: string }> = {
+  const titles: Record<ActiveTab, { title: string; subtitle?: string }> = {
     dashboard: {
-      title: 'Panel General de Rifa',
-      subtitle: campaignName || 'Seguimiento de ventas, recaudación y patrocinios',
+      title: 'Sistema de Gestión de Venta de Publicidad',
+      subtitle: '',
     },
     'all-merchants': {
       title: 'Comercios Totales',
-      subtitle: 'Listado completo de establecimientos que adquirieron tickets',
+      subtitle: 'Listado completo de establecimientos que adquirieron espacios publicitarios',
     },
     debtors: {
       title: 'Tabla de Deudores',
@@ -75,9 +72,11 @@ export const Header: React.FC<Props> = ({
           <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight leading-snug">
             {title}
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
-            {subtitle}
-          </p>
+          {subtitle ? (
+            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
+              {subtitle}
+            </p>
+          ) : null}
         </div>
       </div>
 
